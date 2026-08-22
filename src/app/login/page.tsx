@@ -40,12 +40,14 @@ export default function LoginPage() {
             />
           </div>
 
-          <button 
-            type="button" 
-            className="w-full py-3 px-4 bg-brand-500 hover:bg-brand-400 text-white rounded-xl font-medium transition-colors shadow-lg shadow-brand-500/30 mt-4"
-          >
-            Iniciar Sesión
-          </button>
+          <Link href="/dashboard" className="block mt-4">
+            <button 
+              type="button" 
+              className="w-full py-3 px-4 bg-brand-500 hover:bg-brand-400 text-white rounded-xl font-medium transition-colors shadow-lg shadow-brand-500/30"
+            >
+              Iniciar Sesión (Demo)
+            </button>
+          </Link>
         </form>
 
         <div className="mt-8 text-center text-sm text-brand-200/70">
