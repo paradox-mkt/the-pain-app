@@ -2,20 +2,21 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, BookOpen, MessageCircle, User } from 'lucide-react';
+import { CalendarDays, BookOpen, MessageCircle, User, Calendar as CalendarIcon } from 'lucide-react';
 
 export default function BottomNav() {
   const pathname = usePathname();
 
   const tabs = [
-    { name: 'Diario', href: '/dashboard', icon: CalendarDays },
+    { name: 'Resumen', href: '/dashboard', icon: CalendarDays },
+    { name: 'Calendario', href: '/dashboard/calendar', icon: CalendarIcon },
     { name: 'Crisis', href: '/dashboard/diary', icon: BookOpen },
     { name: 'Comunidad', href: '/dashboard/feed', icon: MessageCircle },
     { name: 'Perfil', href: '/dashboard/profile', icon: User },
   ];
 
   return (
-    <nav className="bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 safe-area-pb">
+    <nav className="md:hidden bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 safe-area-pb">
       <div className="flex justify-around items-center h-16">
         {tabs.map((tab) => {
           const Icon = tab.icon;
