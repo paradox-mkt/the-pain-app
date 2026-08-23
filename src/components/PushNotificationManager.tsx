@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useMockData } from '@/lib/MockDataContext';
 
 export function PushNotificationManager() {
-  const { pushEnabled, medications } = useMockData();
+  const { pushEnabled, baseMedications } = useMockData();
   const notifiedMeds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -17,29 +17,26 @@ export function PushNotificationManager() {
       const currentHours = now.getHours();
       const currentMinutes = now.getMinutes();
 
-      medications.forEach(med => {
-        if (!med.taken) {
-          const [medH, medM] = med.time.split(':').map(Number);
-          
-          // If current time exactly matches or is up to 2 mins after (for demo purposes)
-          const isTime = (currentHours === medH && currentMinutes === medM);
-          
-          // And we haven't notified for this specific med/time today
-          const notifKey = `${med.id}-${med.time}-${now.toDateString()}`;
-          
-          if (isTime && !notifiedMeds.current.has(notifKey)) {
-            new Notification('¡Hora de tu medicina!', {
-              body: `Es hora de tomar tu ${med.name} (${med.dose}). Por favor márcala en la aplicación.`,
-              icon: '/favicon.ico'
-            });
-            notifiedMeds.current.add(notifKey);
-          }
+      baseMedications.forEach(med => {
+        if (!med.isActive) return;
+        const [medH, medM] = med.firstDoseTime.split(':').map(Number);
+        
+        // Very simplified demo push logic
+        const isTime = (currentHours === medH && currentMinutes === medM);
+        const notifKey = `${med.id}-${now.toDateString()}`;
+        
+        if (isTime && !notifiedMeds.current.has(notifKey)) {
+          new Notification('¡Hora de tu medicina!', {
+            body: `Te toca tomar ${med.name} (${med.dose})`,
+            icon: '/icon-192x192.png'
+          });
+          notifiedMeds.current.add(notifKey);
         }
       });
-    }, 60000); // Check every minute
+    }, 60000);
 
     return () => clearInterval(interval);
-  }, [pushEnabled, medications]);
+  }, [pushEnabled, baseMedications]);
 
   return null; // This component doesn't render anything visible
 }
