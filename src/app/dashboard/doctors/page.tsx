@@ -8,6 +8,7 @@ export default function DoctorsPage() {
   const { doctors, addDoctor, updateDoctor, removeDoctor } = useMockData();
   const [name, setName] = useState('');
   const [specialty, setSpecialty] = useState('');
+  const [phone, setPhone] = useState('');
   const [phoneCountryCode, setPhoneCountryCode] = useState('+51');
   const [hospital, setHospital] = useState('');
   
