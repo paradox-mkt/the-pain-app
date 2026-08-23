@@ -25,6 +25,7 @@ export default function DashboardLayout({
         {/* Mobile Bottom Navigation (hidden on desktop) */}
         <BottomNav />
       </div>
+      </div>
     </Providers>
   );
 }
