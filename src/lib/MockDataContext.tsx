@@ -99,8 +99,8 @@ interface MockDataContextType {
     emergencyContactPhone: string;
     specialInstructions: string;
   }>) => void;
-  doctors: {id: string, name: string, specialty: string}[];
-  addDoctor: (doc: {name: string, specialty: string}) => void;
+  doctors: {id: string, name: string, specialty: string, phone?: string, hospital?: string}[];
+  addDoctor: (doc: {name: string, specialty: string, phone?: string, hospital?: string}) => void;
   removeDoctor: (id: string) => void;
   pushEnabled: boolean;
   setPushEnabled: (val: boolean) => void;
@@ -176,9 +176,9 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     specialInstructions: 'En caso de crisis severa, administrar medicación de rescate y mantener a la paciente abrigada.'
   });
 
-  const [doctors, setDoctors] = useState<{id: string, name: string, specialty: string}[]>([
-    { id: '1', name: 'Dr. Juan Pérez', specialty: 'Reumatología' },
-    { id: '2', name: 'Dra. María González', specialty: 'Fisioterapia' }
+  const [doctors, setDoctors] = useState<{id: string, name: string, specialty: string, phone?: string, hospital?: string}[]>([
+    { id: '1', name: 'Dr. Juan Pérez', specialty: 'Reumatología', hospital: 'Clínica San Felipe' },
+    { id: '2', name: 'Dra. María González', specialty: 'Fisioterapia', phone: '+1 234 567 890' }
   ]);
 
   const [pushEnabled, setPushEnabled] = useState(false);
@@ -187,7 +187,7 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     setProfileData(prev => ({ ...prev, ...data }));
   };
 
-  const addDoctor = (doctor: {name: string, specialty: string}) => {
+  const addDoctor = (doctor: {name: string, specialty: string, phone?: string, hospital?: string}) => {
     setDoctors([...doctors, { ...doctor, id: Math.random().toString() }]);
   };
 

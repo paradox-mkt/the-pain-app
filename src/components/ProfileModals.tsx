@@ -8,13 +8,17 @@ export function DoctorsModal({ onClose }: { onClose: () => void }) {
   const { doctors, addDoctor, removeDoctor } = useMockData();
   const [name, setName] = useState('');
   const [specialty, setSpecialty] = useState('');
+  const [phone, setPhone] = useState('');
+  const [hospital, setHospital] = useState('');
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-    addDoctor({ name, specialty: specialty || 'Especialista' });
+    addDoctor({ name, specialty: specialty || 'Especialista', phone, hospital });
     setName('');
     setSpecialty('');
+    setPhone('');
+    setHospital('');
   };
 
   return (
@@ -36,7 +40,13 @@ export function DoctorsModal({ onClose }: { onClose: () => void }) {
                 <li key={doc.id} className="flex justify-between items-center bg-gray-50 dark:bg-slate-800 p-3 rounded-xl border border-gray-100 dark:border-slate-700">
                   <div>
                     <p className="font-bold text-gray-900 dark:text-white text-sm">{doc.name}</p>
-                    <p className="text-xs text-brand-500 font-medium">{doc.specialty}</p>
+                    <p className="text-xs text-brand-500 font-medium mb-1">{doc.specialty}</p>
+                    {(doc.hospital || doc.phone) && (
+                      <div className="flex flex-wrap gap-2 text-[10px] text-gray-500 dark:text-gray-400">
+                        {doc.hospital && <span>🏥 {doc.hospital}</span>}
+                        {doc.phone && <span>📞 {doc.phone}</span>}
+                      </div>
+                    )}
                   </div>
                   <button onClick={() => removeDoctor(doc.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
                     <Trash2 size={16} />
@@ -50,17 +60,31 @@ export function DoctorsModal({ onClose }: { onClose: () => void }) {
         <div className="p-4 border-t border-gray-100 dark:border-slate-800 shrink-0 bg-gray-50 dark:bg-slate-900">
           <form onSubmit={handleAdd} className="space-y-3">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Añadir Nuevo Médico</h3>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <input 
                 type="text" 
                 placeholder="Nombre del Dr."
                 value={name} onChange={e => setName(e.target.value)}
                 className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm"
+                required
               />
               <input 
                 type="text" 
                 placeholder="Especialidad"
                 value={specialty} onChange={e => setSpecialty(e.target.value)}
+                className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm"
+                required
+              />
+              <input 
+                type="text" 
+                placeholder="Teléfono (Opcional)"
+                value={phone} onChange={e => setPhone(e.target.value)}
+                className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm"
+              />
+              <input 
+                type="text" 
+                placeholder="Clínica / Hospital"
+                value={hospital} onChange={e => setHospital(e.target.value)}
                 className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm"
               />
             </div>
