@@ -53,6 +53,26 @@ interface MockDataContextType {
   setEditingCrisisId: (val: string | null) => void;
   isMedModalOpen: boolean;
   setIsMedModalOpen: (val: boolean) => void;
+  profileData: {
+    fullName: string;
+    email: string;
+    birthDate: string;
+    bloodType: string;
+    allergies: string;
+    emergencyContactName: string;
+    emergencyContactPhone: string;
+    specialInstructions: string;
+  };
+  updateProfile: (data: Partial<{
+    fullName: string;
+    email: string;
+    birthDate: string;
+    bloodType: string;
+    allergies: string;
+    emergencyContactName: string;
+    emergencyContactPhone: string;
+    specialInstructions: string;
+  }>) => void;
 }
 
 const MockDataContext = createContext<MockDataContextType | undefined>(undefined);
@@ -101,6 +121,21 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     }
   ]);
 
+  const [profileData, setProfileData] = useState({
+    fullName: 'Jane Doe',
+    email: 'patient@thepain.app',
+    birthDate: '1990-05-15',
+    bloodType: 'O+',
+    allergies: 'Penicilina, Ibuprofeno',
+    emergencyContactName: 'John Doe (Esposo)',
+    emergencyContactPhone: '+1 234 567 890',
+    specialInstructions: 'En caso de crisis severa, administrar medicación de rescate y mantener a la paciente abrigada.'
+  });
+
+  const updateProfile = (data: Partial<typeof profileData>) => {
+    setProfileData(prev => ({ ...prev, ...data }));
+  };
+
   const addCrisis = (crisis: Omit<Crisis, 'id'>) => {
     setCrises([{ ...crisis, id: Math.random().toString() }, ...crises].sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()));
   };
@@ -147,7 +182,8 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
       posts, addPost, toggleLike,
       isCrisisModalOpen, setIsCrisisModalOpen,
       editingCrisisId, setEditingCrisisId,
-      isMedModalOpen, setIsMedModalOpen
+      isMedModalOpen, setIsMedModalOpen,
+      profileData, updateProfile
     }}>
       {children}
     </MockDataContext.Provider>
