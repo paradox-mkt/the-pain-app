@@ -13,6 +13,7 @@ export function CrisisModal() {
   const [dateTime, setDateTime] = useState(() => new Date().toISOString().slice(0, 16));
   
   // Advanced fields
+  const [bodyParts, setBodyParts] = useState<string[]>([]);
   const [tookMedication, setTookMedication] = useState<boolean | null>(null);
   const [medicationTaken, setMedicationTaken] = useState('');
   const [wentToEmergency, setWentToEmergency] = useState<boolean | null>(null);
@@ -24,6 +25,7 @@ export function CrisisModal() {
   const [deleteText, setDeleteText] = useState('');
 
   const availableExams = ['Rayos X', 'Ecografía', 'Resonancia', 'Laboratorio'];
+  const bodyPartOptions = ['General', 'Cabeza', 'Espalda', 'Espalda baja', 'Brazos', 'Codos', 'Manos', 'Piernas', 'Rodillas', 'Pies', 'Articulaciones'];
 
   useEffect(() => {
     if (isCrisisModalOpen) {
@@ -38,6 +40,7 @@ export function CrisisModal() {
           setWentToEmergency(crisis.wentToEmergency ?? null);
           setEmergencyTreatment(crisis.emergencyTreatment || '');
           setExamsDone(crisis.examsDone || []);
+          setBodyParts(crisis.bodyParts || []);
         }
       } else {
         // Reset form for new crisis
@@ -49,6 +52,7 @@ export function CrisisModal() {
         setWentToEmergency(null);
         setEmergencyTreatment('');
         setExamsDone([]);
+        setBodyParts([]);
       }
       setShowDeleteConfirm(false);
       setDeleteText('');
@@ -70,6 +74,14 @@ export function CrisisModal() {
     }
   };
 
+  const handleToggleBodyPart = (part: string) => {
+    if (bodyParts.includes(part)) {
+      setBodyParts(bodyParts.filter(p => p !== part));
+    } else {
+      setBodyParts([...bodyParts, part]);
+    }
+  };
+
   const handleDelete = () => {
     if (deleteText === 'BORRAR' && editingCrisisId) {
       deleteCrisis(editingCrisisId);
@@ -80,11 +92,11 @@ export function CrisisModal() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const crisisData = {
+    const finalData = {
       intensity,
       notes: notes || 'Crisis registrada sin notas adicionales.',
       dateTime,
-      bodyParts: ['General'],
+      bodyParts,
       tookMedication: tookMedication ?? false,
       medicationTaken: tookMedication ? medicationTaken : undefined,
       wentToEmergency: wentToEmergency ?? false,
@@ -93,9 +105,9 @@ export function CrisisModal() {
     };
 
     if (editingCrisisId) {
-      updateCrisis(editingCrisisId, crisisData);
+      updateCrisis(editingCrisisId, finalData);
     } else {
-      addCrisis(crisisData);
+      addCrisis(finalData);
     }
     
     handleClose();
@@ -105,7 +117,6 @@ export function CrisisModal() {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
         
-        {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-slate-800 shrink-0">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             {editingCrisisId ? 'Editar Crisis' : 'Registrar Crisis'}
@@ -115,14 +126,12 @@ export function CrisisModal() {
           </button>
         </div>
 
-        {/* Scrollable Body */}
         <div className="overflow-y-auto flex-1 p-4">
           {!showDeleteConfirm ? (
             <form id="crisis-form" onSubmit={handleSubmit} className="space-y-6">
               
-              {/* Fecha y Hora */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Fecha y Hora del evento</label>
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Fecha y Hora</label>
                 <input 
                   type="datetime-local" 
                   value={dateTime}
@@ -131,31 +140,44 @@ export function CrisisModal() {
                 />
               </div>
 
-              {/* Intensidad */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Intensidad del Dolor: <span className="text-red-500 font-bold">{intensity}/10</span></label>
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Intensidad: <span className="text-red-500 font-bold">{intensity}/10</span></label>
                 <input 
                   type="range" min="1" max="10" 
                   value={intensity} onChange={(e) => setIntensity(parseInt(e.target.value))}
                   className="w-full accent-red-500"
                 />
-                <div className="flex justify-between text-xs text-gray-400">
-                  <span>Leve</span>
-                  <span>Inaguantable</span>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">¿Dónde fue el dolor?</label>
+                <div className="flex flex-wrap gap-2">
+                  {bodyPartOptions.map(part => (
+                    <button
+                      key={part}
+                      type="button"
+                      onClick={() => handleToggleBodyPart(part)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors border ${
+                        bodyParts.includes(part)
+                          ? 'bg-brand-500 border-brand-500 text-white'
+                          : 'bg-gray-100 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400'
+                      }`}
+                    >
+                      {part}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Notas */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Notas y Síntomas</label>
                 <textarea 
                   value={notes} onChange={(e) => setNotes(e.target.value)}
-                  placeholder="¿Cómo te sientes? ¿Qué lo provocó?"
+                  placeholder="¿Cómo te sientes?"
                   className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 min-h-[80px]"
                 />
               </div>
 
-              {/* Pastillas */}
               <div className="space-y-3 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-800">
                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">¿Tomaste alguna pastilla/medicación extra?</label>
                 <div className="flex gap-4">
