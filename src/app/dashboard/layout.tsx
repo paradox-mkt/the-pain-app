@@ -1,6 +1,7 @@
 import BottomNav from '@/components/BottomNav';
 import DesktopSidebar from '@/components/DesktopSidebar';
 import Providers from '@/components/Providers';
+import { PushNotificationManager } from '@/components/PushNotificationManager';
 
 export default function DashboardLayout({
   children,
@@ -9,6 +10,7 @@ export default function DashboardLayout({
 }) {
   return (
     <Providers>
+      <PushNotificationManager />
       <div className="flex h-screen h-[100dvh] bg-gray-50 dark:bg-slate-950 overflow-hidden">
       {/* Desktop Sidebar (hidden on mobile) */}
       <DesktopSidebar />

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, QrCode, ShieldAlert, LogOut, ChevronRight, X, Edit3, Save } from 'lucide-react';
+import { Settings, QrCode, ShieldAlert, LogOut, ChevronRight, X, Edit3, Save, Phone } from 'lucide-react';
 import { useMockData } from '@/lib/MockDataContext';
+import { DoctorsModal, RemindersModal } from '@/components/ProfileModals';
 
 export default function ProfilePage() {
   const { profileData, updateProfile } = useMockData();
@@ -11,6 +12,10 @@ export default function ProfilePage() {
   
   // Local state for editing
   const [editForm, setEditForm] = useState(profileData);
+
+  // Modals state
+  const [showDoctors, setShowDoctors] = useState(false);
+  const [showReminders, setShowReminders] = useState(false);
 
   const handleEditClick = () => {
     setEditForm(profileData);
@@ -59,11 +64,21 @@ export default function ProfilePage() {
                 className="w-full p-2 border border-gray-200 dark:border-slate-600 rounded bg-gray-50 dark:bg-slate-700 text-sm"
                 placeholder="Correo electrónico"
               />
+              <input 
+                type="tel" 
+                value={editForm.phone}
+                onChange={e => setEditForm({...editForm, phone: e.target.value})}
+                className="w-full p-2 border border-gray-200 dark:border-slate-600 rounded bg-gray-50 dark:bg-slate-700 text-sm"
+                placeholder="Teléfono"
+              />
             </div>
           ) : (
             <>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">{profileData.fullName}</h2>
               <p className="text-sm text-gray-500">{profileData.email}</p>
+              <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+                <Phone size={12} /> {profileData.phone}
+              </div>
             </>
           )}
         </div>
@@ -152,12 +167,12 @@ export default function ProfilePage() {
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-2">Ajustes</h3>
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden divide-y divide-gray-100 dark:divide-slate-700">
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+            <button onClick={() => setShowDoctors(true)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
               <span className="text-gray-800 dark:text-gray-200 font-medium">Mis Médicos</span>
               <ChevronRight size={20} className="text-gray-400" />
             </button>
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
-              <span className="text-gray-800 dark:text-gray-200 font-medium">Configurar Recordatorios</span>
+            <button onClick={() => setShowReminders(true)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+              <span className="text-gray-800 dark:text-gray-200 font-medium">Configurar Recordatorios (Push)</span>
               <ChevronRight size={20} className="text-gray-400" />
             </button>
             <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors text-red-500">
@@ -197,6 +212,11 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Render new Modals conditionally */}
+      {showDoctors && <DoctorsModal onClose={() => setShowDoctors(false)} />}
+      {showReminders && <RemindersModal onClose={() => setShowReminders(false)} />}
+
     </div>
   );
 }
