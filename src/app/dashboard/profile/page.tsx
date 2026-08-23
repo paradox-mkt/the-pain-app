@@ -206,6 +206,7 @@ export default function ProfilePage() {
               <p className="font-bold text-gray-900 dark:text-white">{profileData.fullName}</p>
               <p>Sangre: <span className="font-bold text-red-500">{profileData.bloodType}</span></p>
               <p>Alergias: {profileData.allergies || 'Ninguna'}</p>
+              {profileData.diseases && <p className="mt-1">Enfermedades: <span className="font-semibold text-brand-500">{profileData.diseases}</span></p>}
             </div>
 
             <div className="bg-white p-4 rounded-2xl shadow-inner mb-4">
