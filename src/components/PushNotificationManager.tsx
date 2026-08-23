@@ -29,7 +29,7 @@ export function PushNotificationManager() {
           
           if (isTime && !notifiedMeds.current.has(notifKey)) {
             new Notification('¡Hora de tu medicina!', {
-              body: `Es hora de tomar tu ${med.name} (${med.dosage}). Por favor márcala en la aplicación.`,
+              body: `Es hora de tomar tu ${med.name} (${med.dose}). Por favor márcala en la aplicación.`,
               icon: '/favicon.ico'
             });
             notifiedMeds.current.add(notifKey);
