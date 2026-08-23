@@ -1,15 +1,16 @@
 import { ShieldAlert, PhoneCall, HeartPulse, Activity } from 'lucide-react';
 import Link from 'next/link';
 
-export default function PublicEmergencyCard({ params }: { params: { id: string } }) {
+export default function PublicEmergencyCard() {
   // En un entorno real, buscaríamos en la BD usando params.id
   // Aquí usamos el Mock Data por defecto para la demo
   const mockProfileData = {
     fullName: 'Jane Doe',
-    birthDate: '1985-05-15',
+    birthDate: '1990-05-15',
     bloodType: 'O+',
-    allergies: 'Penicilina, Nueces',
-    emergencyContact: 'John Doe',
+    allergies: 'Penicilina, Ibuprofeno',
+    diseases: 'Artritis Reumatoide, Fibromialgia',
+    emergencyContact: 'John Doe (Esposo)',
     emergencyPhone: '+1 555-0198'
   };
 
@@ -48,6 +49,11 @@ export default function PublicEmergencyCard({ params }: { params: { id: string }
               <p className="text-xs text-gray-500 font-bold uppercase">Alergias</p>
               <p className="text-sm font-bold text-orange-700 leading-tight">{mockProfileData.allergies}</p>
             </div>
+          </div>
+          
+          <div className="bg-purple-50 p-4 rounded-2xl text-center border border-purple-100">
+            <p className="text-xs text-purple-600 font-bold uppercase mb-1">Enfermedades / Condiciones</p>
+            <p className="text-sm font-bold text-purple-900">{mockProfileData.diseases}</p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-2xl space-y-3">

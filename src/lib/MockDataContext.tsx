@@ -80,6 +80,7 @@ interface MockDataContextType {
     birthDate: string;
     bloodType: string;
     allergies: string;
+    diseases: string;
     emergencyContactName: string;
     emergencyContactPhone: string;
     specialInstructions: string;
@@ -91,6 +92,7 @@ interface MockDataContextType {
     birthDate: string;
     bloodType: string;
     allergies: string;
+    diseases: string;
     emergencyContactName: string;
     emergencyContactPhone: string;
     specialInstructions: string;
@@ -165,6 +167,7 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     birthDate: '1990-05-15',
     bloodType: 'O+',
     allergies: 'Penicilina, Ibuprofeno',
+    diseases: 'Artritis Reumatoide, Fibromialgia',
     emergencyContactName: 'John Doe (Esposo)',
     emergencyContactPhone: '+1 234 567 890',
     specialInstructions: 'En caso de crisis severa, administrar medicación de rescate y mantener a la paciente abrigada.'

@@ -113,6 +113,10 @@ export default function ProfilePage() {
                 <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Alergias</label>
                 <input type="text" value={editForm.allergies} onChange={e => setEditForm({...editForm, allergies: e.target.value})} className="w-full p-2 rounded border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm" />
               </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Enfermedades crónicas</label>
+                <input type="text" value={editForm.diseases} onChange={e => setEditForm({...editForm, diseases: e.target.value})} className="w-full p-2 rounded border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm" />
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Contacto Emg. (Nombre)</label>
@@ -143,6 +147,10 @@ export default function ProfilePage() {
                 <div className="col-span-2">
                   <p className="text-gray-500 dark:text-gray-400 text-xs font-semibold">Alergias</p>
                   <p className="font-medium text-gray-900 dark:text-gray-100">{profileData.allergies}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-gray-500 dark:text-gray-400 text-xs font-semibold">Enfermedades</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{profileData.diseases}</p>
                 </div>
                 <div className="col-span-2 border-t border-red-200/50 dark:border-red-900/50 pt-2 mt-1">
                   <p className="text-gray-500 dark:text-gray-400 text-xs font-semibold">Contacto de Emergencia</p>
