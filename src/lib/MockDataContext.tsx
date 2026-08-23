@@ -101,6 +101,7 @@ interface MockDataContextType {
   }>) => void;
   doctors: {id: string, name: string, specialty: string, phone?: string, hospital?: string}[];
   addDoctor: (doc: {name: string, specialty: string, phone?: string, hospital?: string}) => void;
+  updateDoctor: (id: string, doc: Partial<{name: string, specialty: string, phone: string, hospital: string}>) => void;
   removeDoctor: (id: string) => void;
   pushEnabled: boolean;
   setPushEnabled: (val: boolean) => void;
@@ -191,6 +192,10 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     setDoctors([...doctors, { ...doctor, id: Math.random().toString() }]);
   };
 
+  const updateDoctor = (id: string, data: Partial<{name: string, specialty: string, phone: string, hospital: string}>) => {
+    setDoctors(doctors.map(d => d.id === id ? { ...d, ...data } : d));
+  };
+
   const removeDoctor = (id: string) => {
     setDoctors(doctors.filter(d => d.id !== id));
   };
@@ -262,7 +267,7 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
       editingCrisisId, setEditingCrisisId,
       isMedModalOpen, setIsMedModalOpen,
       profileData, updateProfile,
-      doctors, addDoctor, removeDoctor,
+      doctors, addDoctor, updateDoctor, removeDoctor,
       pushEnabled, setPushEnabled
     }}>
       {children}

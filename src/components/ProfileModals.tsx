@@ -2,14 +2,18 @@
 
 import { useState } from 'react';
 import { useMockData } from '@/lib/MockDataContext';
-import { X, Trash2, Plus, BellRing } from 'lucide-react';
+import { X, Trash2, Plus, BellRing, Edit2, Check } from 'lucide-react';
 
 export function DoctorsModal({ onClose }: { onClose: () => void }) {
-  const { doctors, addDoctor, removeDoctor } = useMockData();
+  const { doctors, addDoctor, updateDoctor, removeDoctor } = useMockData();
   const [name, setName] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [phone, setPhone] = useState('');
   const [hospital, setHospital] = useState('');
+  
+  // Edit state
+  const [editingDocId, setEditingDocId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', specialty: '', phone: '', hospital: '' });
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,20 +41,42 @@ export function DoctorsModal({ onClose }: { onClose: () => void }) {
           ) : (
             <ul className="space-y-3">
               {doctors.map(doc => (
-                <li key={doc.id} className="flex justify-between items-center bg-gray-50 dark:bg-slate-800 p-3 rounded-xl border border-gray-100 dark:border-slate-700">
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white text-sm">{doc.name}</p>
-                    <p className="text-xs text-brand-500 font-medium mb-1">{doc.specialty}</p>
-                    {(doc.hospital || doc.phone) && (
-                      <div className="flex flex-wrap gap-2 text-[10px] text-gray-500 dark:text-gray-400">
-                        {doc.hospital && <span>🏥 {doc.hospital}</span>}
-                        {doc.phone && <span>📞 {doc.phone}</span>}
+                <li key={doc.id} className="bg-gray-50 dark:bg-slate-800 p-3 rounded-xl border border-gray-100 dark:border-slate-700 space-y-2">
+                  {editingDocId === doc.id ? (
+                    <div className="space-y-2 animate-in fade-in">
+                      <div className="grid grid-cols-2 gap-2">
+                        <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-xs" placeholder="Nombre" required />
+                        <input type="text" value={editForm.specialty} onChange={e => setEditForm({...editForm, specialty: e.target.value})} className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-xs" placeholder="Especialidad" required />
+                        <input type="text" value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-xs" placeholder="Teléfono" />
+                        <input type="text" value={editForm.hospital} onChange={e => setEditForm({...editForm, hospital: e.target.value})} className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-xs" placeholder="Hospital/Clínica" />
                       </div>
-                    )}
-                  </div>
-                  <button onClick={() => removeDoctor(doc.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
-                    <Trash2 size={16} />
-                  </button>
+                      <div className="flex justify-end gap-2 mt-2">
+                        <button onClick={() => setEditingDocId(null)} className="px-3 py-1 text-xs font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">Cancelar</button>
+                        <button onClick={() => { updateDoctor(doc.id, editForm); setEditingDocId(null); }} className="px-3 py-1 bg-brand-500 hover:bg-brand-600 text-white rounded text-xs font-semibold flex items-center gap-1"><Check size={14} /> Guardar</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-bold text-gray-900 dark:text-white text-sm">{doc.name}</p>
+                        <p className="text-xs text-brand-500 font-medium mb-1">{doc.specialty}</p>
+                        {(doc.hospital || doc.phone) && (
+                          <div className="flex flex-wrap gap-2 text-[10px] text-gray-500 dark:text-gray-400">
+                            {doc.hospital && <span>🏥 {doc.hospital}</span>}
+                            {doc.phone && <span>📞 {doc.phone}</span>}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => { setEditingDocId(doc.id); setEditForm({ name: doc.name, specialty: doc.specialty, phone: doc.phone || '', hospital: doc.hospital || '' }); }} className="p-2 text-gray-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-lg transition-colors">
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => removeDoctor(doc.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
