@@ -2,26 +2,27 @@
 
 import { useState } from 'react';
 import { useMockData } from '@/lib/MockDataContext';
-import { Stethoscope, Trash2, Plus, Edit2, Check } from 'lucide-react';
+import { Stethoscope, Trash2, Plus, Edit2, Check, Star } from 'lucide-react';
 
 export default function DoctorsPage() {
   const { doctors, addDoctor, updateDoctor, removeDoctor } = useMockData();
   const [name, setName] = useState('');
   const [specialty, setSpecialty] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phoneCountryCode, setPhoneCountryCode] = useState('+51');
   const [hospital, setHospital] = useState('');
   
   // Edit state
   const [editingDocId, setEditingDocId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ name: '', specialty: '', phone: '', hospital: '' });
+  const [editForm, setEditForm] = useState({ name: '', specialty: '', phone: '', phoneCountryCode: '+51', hospital: '' });
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-    addDoctor({ name, specialty: specialty || 'Especialista', phone, hospital });
+    addDoctor({ name, specialty: specialty || 'Especialista', phone, phoneCountryCode, hospital });
     setName('');
     setSpecialty('');
     setPhone('');
+    setPhoneCountryCode('+51');
     setHospital('');
   };
 
@@ -53,12 +54,26 @@ export default function DoctorsPage() {
                 className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
                 required
               />
-              <input 
-                type="text" 
-                placeholder="Teléfono (Opcional)"
-                value={phone} onChange={e => setPhone(e.target.value)}
-                className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
-              />
+              <div className="flex gap-2">
+                <select 
+                  value={phoneCountryCode} onChange={e => setPhoneCountryCode(e.target.value)}
+                  className="w-1/3 p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                >
+                  <option value="+51">+51 🇵🇪</option>
+                  <option value="+52">+52 🇲🇽</option>
+                  <option value="+1">+1 🇺🇸/🇨🇦</option>
+                  <option value="+34">+34 🇪🇸</option>
+                  <option value="+54">+54 🇦🇷</option>
+                  <option value="+57">+57 🇨🇴</option>
+                  <option value="+56">+56 🇨🇱</option>
+                </select>
+                <input 
+                  type="text" 
+                  placeholder="Teléfono (Opcional)"
+                  value={phone} onChange={e => setPhone(e.target.value)}
+                  className="w-2/3 p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                />
+              </div>
               <input 
                 type="text" 
                 placeholder="Clínica / Hospital"
@@ -87,7 +102,18 @@ export default function DoctorsPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Nombre" required />
                         <input type="text" value={editForm.specialty} onChange={e => setEditForm({...editForm, specialty: e.target.value})} className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Especialidad" required />
-                        <input type="text" value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Teléfono" />
+                        <div className="flex gap-2">
+                          <select value={editForm.phoneCountryCode} onChange={e => setEditForm({...editForm, phoneCountryCode: e.target.value})} className="w-1/3 p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="+51">+51 🇵🇪</option>
+                            <option value="+52">+52 🇲🇽</option>
+                            <option value="+1">+1 🇺🇸/🇨🇦</option>
+                            <option value="+34">+34 🇪🇸</option>
+                            <option value="+54">+54 🇦🇷</option>
+                            <option value="+57">+57 🇨🇴</option>
+                            <option value="+56">+56 🇨🇱</option>
+                          </select>
+                          <input type="text" value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="w-2/3 p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Teléfono" />
+                        </div>
                         <input type="text" value={editForm.hospital} onChange={e => setEditForm({...editForm, hospital: e.target.value})} className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Hospital/Clínica" />
                       </div>
                       <div className="flex justify-end gap-2 mt-2">
@@ -98,17 +124,27 @@ export default function DoctorsPage() {
                   ) : (
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-bold text-gray-900 dark:text-white text-lg">{doc.name}</p>
+                        <p className="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2">
+                          {doc.name}
+                          {doc.isMain && <Star size={16} className="text-yellow-500" fill="currentColor" />}
+                        </p>
                         <p className="text-sm text-brand-500 font-medium mb-2">{doc.specialty}</p>
                         {(doc.hospital || doc.phone) && (
                           <div className="flex flex-col gap-1 text-xs text-gray-500 dark:text-gray-400">
                             {doc.hospital && <span className="flex items-center gap-1">🏥 {doc.hospital}</span>}
-                            {doc.phone && <span className="flex items-center gap-1">📞 {doc.phone}</span>}
+                            {doc.phone && <span className="flex items-center gap-1">📞 {doc.phoneCountryCode} {doc.phone}</span>}
                           </div>
                         )}
                       </div>
                       <div className="flex items-center gap-1 bg-gray-50 dark:bg-slate-900 p-1 rounded-lg">
-                        <button onClick={() => { setEditingDocId(doc.id); setEditForm({ name: doc.name, specialty: doc.specialty, phone: doc.phone || '', hospital: doc.hospital || '' }); }} className="p-2 text-gray-400 hover:text-brand-500 rounded-md transition-colors">
+                        <button 
+                          onClick={() => updateDoctor(doc.id, { isMain: !doc.isMain })} 
+                          className={`p-2 rounded-md transition-colors ${doc.isMain ? 'text-yellow-500 hover:text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20' : 'text-gray-400 hover:text-yellow-500'}`}
+                          title="Marcar como Principal"
+                        >
+                          <Star size={18} fill={doc.isMain ? "currentColor" : "none"} />
+                        </button>
+                        <button onClick={() => { setEditingDocId(doc.id); setEditForm({ name: doc.name, specialty: doc.specialty, phone: doc.phone || '', phoneCountryCode: doc.phoneCountryCode || '+51', hospital: doc.hospital || '' }); }} className="p-2 text-gray-400 hover:text-brand-500 rounded-md transition-colors">
                           <Edit2 size={18} />
                         </button>
                         <button onClick={() => removeDoctor(doc.id)} className="p-2 text-gray-400 hover:text-red-500 rounded-md transition-colors">

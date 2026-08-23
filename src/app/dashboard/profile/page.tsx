@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, QrCode, ShieldAlert, LogOut, ChevronRight, X, Edit3, Save, Phone, Download } from 'lucide-react';
+import { Settings, QrCode, ShieldAlert, LogOut, ChevronRight, X, Edit3, Save, Phone, Download, MessageCircle } from 'lucide-react';
 import { useMockData } from '@/lib/MockDataContext';
 import { RemindersModal } from '@/components/ProfileModals';
 
@@ -142,7 +142,18 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Teléfono Emg.</label>
-                  <input type="text" value={editForm.emergencyContactPhone} onChange={e => setEditForm({...editForm, emergencyContactPhone: e.target.value})} className="w-full p-2 rounded border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm" />
+                  <div className="flex gap-2">
+                    <select value={editForm.emergencyContactCountryCode || '+51'} onChange={e => setEditForm({...editForm, emergencyContactCountryCode: e.target.value})} className="w-1/3 p-2 rounded border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm">
+                      <option value="+51">+51 🇵🇪</option>
+                      <option value="+52">+52 🇲🇽</option>
+                      <option value="+1">+1 🇺🇸/🇨🇦</option>
+                      <option value="+34">+34 🇪🇸</option>
+                      <option value="+54">+54 🇦🇷</option>
+                      <option value="+57">+57 🇨🇴</option>
+                      <option value="+56">+56 🇨🇱</option>
+                    </select>
+                    <input type="text" value={editForm.emergencyContactPhone} onChange={e => setEditForm({...editForm, emergencyContactPhone: e.target.value})} className="w-2/3 p-2 rounded border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm" />
+                  </div>
                 </div>
               </div>
               <div>
@@ -173,7 +184,7 @@ export default function ProfilePage() {
                 <div className="col-span-2 border-t border-red-200/50 dark:border-red-900/50 pt-2 mt-1">
                   <p className="text-gray-500 dark:text-gray-400 text-xs font-semibold">Contacto de Emergencia</p>
                   <p className="font-medium text-gray-900 dark:text-gray-100">{profileData.emergencyContactName}</p>
-                  <p className="text-red-600 dark:text-red-400 font-bold">{profileData.emergencyContactPhone}</p>
+                  <p className="text-red-600 dark:text-red-400 font-bold">{profileData.emergencyContactCountryCode} {profileData.emergencyContactPhone}</p>
                 </div>
               </div>
               
@@ -239,11 +250,20 @@ export default function ProfilePage() {
               thepain.app/emergency/jane-doe
             </a>
             
-            <p className="text-xs text-center text-gray-500">
+            <div className="text-xs text-center text-gray-500 mb-2">
               Avisar a: <br/>
               <strong>{profileData.emergencyContactName}</strong><br/>
-              {profileData.emergencyContactPhone}
-            </p>
+              {profileData.emergencyContactCountryCode} {profileData.emergencyContactPhone}
+            </div>
+            
+            <div className="flex justify-center gap-4 w-full px-8">
+              <a href={`tel:${profileData.emergencyContactCountryCode}${profileData.emergencyContactPhone}`} className="flex-1 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-lg transition-transform hover:scale-105 flex items-center justify-center gap-2">
+                <Phone size={18} /> Llamar
+              </a>
+              <a href={`https://wa.me/${(profileData.emergencyContactCountryCode || '').replace('+','')}${profileData.emergencyContactPhone}`} target="_blank" className="flex-1 py-2 bg-[#25D366] hover:bg-[#1ebd5a] text-white rounded-xl shadow-lg transition-transform hover:scale-105 flex items-center justify-center gap-2">
+                <MessageCircle size={18} /> Chat
+              </a>
+            </div>
           </div>
         </div>
       )}

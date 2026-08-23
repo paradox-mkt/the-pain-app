@@ -15,6 +15,16 @@ export type Crisis = {
   examsDone?: string[];
 };
 
+export type Doctor = {
+  id: string;
+  name: string;
+  specialty: string;
+  phone?: string;
+  phoneCountryCode?: string;
+  hospital?: string;
+  isMain?: boolean;
+};
+
 export type BaseMedication = {
   id: string;
   name: string;
@@ -102,6 +112,7 @@ interface MockDataContextType {
     diseases: string;
     emergencyContactName: string;
     emergencyContactPhone: string;
+    emergencyContactCountryCode?: string;
     specialInstructions: string;
   };
   updateProfile: (data: Partial<{
@@ -114,11 +125,12 @@ interface MockDataContextType {
     diseases: string;
     emergencyContactName: string;
     emergencyContactPhone: string;
+    emergencyContactCountryCode?: string;
     specialInstructions: string;
   }>) => void;
-  doctors: {id: string, name: string, specialty: string, phone?: string, hospital?: string}[];
-  addDoctor: (doc: {name: string, specialty: string, phone?: string, hospital?: string}) => void;
-  updateDoctor: (id: string, doc: Partial<{name: string, specialty: string, phone: string, hospital: string}>) => void;
+  doctors: Doctor[];
+  addDoctor: (doc: Omit<Doctor, 'id'>) => void;
+  updateDoctor: (id: string, doc: Partial<Doctor>) => void;
   removeDoctor: (id: string) => void;
   pushEnabled: boolean;
   setPushEnabled: (val: boolean) => void;
@@ -195,13 +207,14 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     allergies: 'Penicilina, Ibuprofeno',
     diseases: 'Artritis Reumatoide, Fibromialgia',
     emergencyContactName: 'John Doe (Esposo)',
-    emergencyContactPhone: '+1 234 567 890',
-    specialInstructions: 'En caso de crisis severa, administrar medicación de rescate y mantener a la paciente abrigada.'
+    emergencyContactPhone: '5550198',
+    emergencyContactCountryCode: '+1',
+    specialInstructions: 'Llamar a mi esposo primero.'
   });
 
-  const [doctors, setDoctors] = useState<{id: string, name: string, specialty: string, phone?: string, hospital?: string}[]>([
-    { id: '1', name: 'Dr. Juan Pérez', specialty: 'Reumatología', hospital: 'Clínica San Felipe' },
-    { id: '2', name: 'Dra. María González', specialty: 'Fisioterapia', phone: '+1 234 567 890' }
+  const [doctors, setDoctors] = useState<Doctor[]>([
+    { id: '1', name: 'Dr. Alex Rivera', specialty: 'Reumatólogo', isMain: true, phoneCountryCode: '+51', phone: '987654321', hospital: 'Clínica San Felipe' },
+    { id: '2', name: 'Dra. Carmen Soto', specialty: 'Fisioterapeuta' }
   ]);
 
   const [pushEnabled, setPushEnabled] = useState(false);
@@ -210,12 +223,25 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     setProfileData(prev => ({ ...prev, ...data }));
   };
 
-  const addDoctor = (doctor: {name: string, specialty: string, phone?: string, hospital?: string}) => {
-    setDoctors([...doctors, { ...doctor, id: Math.random().toString() }]);
+  const addDoctor = (doc: Omit<Doctor, 'id'>) => {
+    if (doc.isMain) {
+      setDoctors(prev => [
+        ...prev.map(d => ({ ...d, isMain: false })),
+        { ...doc, id: Date.now().toString() }
+      ]);
+    } else {
+      setDoctors(prev => [...prev, { ...doc, id: Date.now().toString() }]);
+    }
   };
 
-  const updateDoctor = (id: string, data: Partial<{name: string, specialty: string, phone: string, hospital: string}>) => {
-    setDoctors(doctors.map(d => d.id === id ? { ...d, ...data } : d));
+  const updateDoctor = (id: string, updates: Partial<Doctor>) => {
+    setDoctors(prev => {
+      let newList = [...prev];
+      if (updates.isMain) {
+        newList = newList.map(d => ({ ...d, isMain: false }));
+      }
+      return newList.map(doc => doc.id === id ? { ...doc, ...updates } : doc);
+    });
   };
 
   const removeDoctor = (id: string) => {
