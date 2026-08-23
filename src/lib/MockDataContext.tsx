@@ -15,11 +15,20 @@ export type Crisis = {
   examsDone?: string[];
 };
 
-export type Medication = {
+export type BaseMedication = {
   id: string;
   name: string;
   dose: string;
-  time: string;
+  frequency: string; // '24h', '12h', '8h', '6h'
+  firstDoseTime: string; // '08:00'
+  isActive: boolean;
+};
+
+export type MedicationLog = {
+  id: string;
+  baseMedId: string;
+  date: string; // 'YYYY-MM-DD'
+  time: string; // 'HH:mm'
   taken: boolean;
 };
 
@@ -55,9 +64,12 @@ interface MockDataContextType {
   addCrisis: (crisis: Omit<Crisis, 'id'>) => void;
   updateCrisis: (id: string, crisis: Partial<Crisis>) => void;
   deleteCrisis: (id: string) => void;
-  medications: Medication[];
-  addMedication: (med: Omit<Medication, 'id'>) => void;
-  toggleMedication: (id: string) => void;
+  baseMedications: BaseMedication[];
+  addBaseMedication: (med: Omit<BaseMedication, 'id'>) => void;
+  updateBaseMedication: (id: string, med: Partial<BaseMedication>) => void;
+  deleteBaseMedication: (id: string) => void;
+  medicationLogs: MedicationLog[];
+  toggleMedicationLog: (baseMedId: string, date: string, time: string) => void;
   appointments: Appointment[];
   addAppointment: (appt: Omit<Appointment, 'id'>) => void;
   updateAppointment: (id: string, appt: Partial<Appointment>) => void;
@@ -138,9 +150,14 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     }
   ]);
 
-  const [medications, setMedications] = useState<Medication[]>([
-    { id: '1', name: 'Pregabalina', dose: '75mg', time: '08:00 AM', taken: true },
-    { id: '2', name: 'Duloxetina', dose: '60mg', time: '20:00 PM', taken: false }
+  const [baseMedications, setBaseMedications] = useState<BaseMedication[]>([
+    { id: '1', name: 'Pregabalina', dose: '75mg', frequency: '24h', firstDoseTime: '08:00', isActive: true },
+    { id: '2', name: 'Duloxetina', dose: '60mg', frequency: '24h', firstDoseTime: '20:00', isActive: true },
+    { id: '3', name: 'Tramadol', dose: '50mg', frequency: '12h', firstDoseTime: '08:00', isActive: false }
+  ]);
+
+  const [medicationLogs, setMedicationLogs] = useState<MedicationLog[]>([
+    { id: '1', baseMedId: '1', date: new Date().toISOString().split('T')[0], time: '08:00', taken: true }
   ]);
 
   const [appointments, setAppointments] = useState<Appointment[]>([
@@ -214,12 +231,28 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     setCrises(crises.filter(c => c.id !== id));
   };
 
-  const addMedication = (med: Omit<Medication, 'id'>) => {
-    setMedications([...medications, { ...med, id: Math.random().toString() }]);
+  const addBaseMedication = (med: Omit<BaseMedication, 'id'>) => {
+    setBaseMedications([...baseMedications, { ...med, id: Math.random().toString() }]);
   };
 
-  const toggleMedication = (id: string) => {
-    setMedications(medications.map(m => m.id === id ? { ...m, taken: !m.taken } : m));
+  const updateBaseMedication = (id: string, med: Partial<BaseMedication>) => {
+    setBaseMedications(baseMedications.map(m => m.id === id ? { ...m, ...med } : m));
+  };
+
+  const deleteBaseMedication = (id: string) => {
+    setBaseMedications(baseMedications.filter(m => m.id !== id));
+    setMedicationLogs(medicationLogs.filter(log => log.baseMedId !== id)); // Clean up logs
+  };
+
+  const toggleMedicationLog = (baseMedId: string, date: string, time: string) => {
+    const existingLogIndex = medicationLogs.findIndex(log => log.baseMedId === baseMedId && log.date === date && log.time === time);
+    if (existingLogIndex >= 0) {
+      const newLogs = [...medicationLogs];
+      newLogs[existingLogIndex].taken = !newLogs[existingLogIndex].taken;
+      setMedicationLogs(newLogs);
+    } else {
+      setMedicationLogs([...medicationLogs, { id: Math.random().toString(), baseMedId, date, time, taken: true }]);
+    }
   };
 
   const addAppointment = (appt: Omit<Appointment, 'id'>) => {
@@ -268,7 +301,8 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
   return (
     <MockDataContext.Provider value={{
       crises, addCrisis, updateCrisis, deleteCrisis,
-      medications, addMedication, toggleMedication,
+      baseMedications, addBaseMedication, updateBaseMedication, deleteBaseMedication,
+      medicationLogs, toggleMedicationLog,
       appointments, addAppointment, updateAppointment, deleteAppointment,
       extraMeds, addExtraMed, updateExtraMed, deleteExtraMed,
       posts, addPost, toggleLike,
