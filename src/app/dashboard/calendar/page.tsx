@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Plus, Activity, Calendar as CalendarIcon, Pi
 import { useMockData } from '@/lib/MockDataContext';
 
 export default function CalendarPage() {
-  const { crises, appointments, extraMeds, setIsCrisisModalOpen, addAppointment, addExtraMed, doctors } = useMockData();
+  const { crises, appointments, extraMeds, setIsCrisisModalOpen, setCrisisModalDefaultDate, addAppointment, addExtraMed, doctors } = useMockData();
   const [view, setView] = useState<'month' | 'week' | 'day'>('day');
   
   // Date state
@@ -75,7 +75,7 @@ export default function CalendarPage() {
   };
 
   const openCrisisModalForSelected = () => {
-    // In a real app we'd pass the default date to the context/modal, but for now just open it
+    setCrisisModalDefaultDate(`${formatDateString(selectedDate)}T12:00`);
     setIsCrisisModalOpen(true);
   };
 

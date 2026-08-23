@@ -5,7 +5,7 @@ import { useMockData } from '@/lib/MockDataContext';
 import { X, Trash2, AlertTriangle } from 'lucide-react';
 
 export function CrisisModal() {
-  const { isCrisisModalOpen, setIsCrisisModalOpen, addCrisis, updateCrisis, deleteCrisis, crises, editingCrisisId, setEditingCrisisId } = useMockData();
+  const { isCrisisModalOpen, setIsCrisisModalOpen, addCrisis, updateCrisis, deleteCrisis, crises, editingCrisisId, setEditingCrisisId, crisisModalDefaultDate, setCrisisModalDefaultDate } = useMockData();
   
   // States
   const [intensity, setIntensity] = useState(5);
@@ -46,7 +46,7 @@ export function CrisisModal() {
         // Reset form for new crisis
         setIntensity(5);
         setNotes('');
-        setDateTime(new Date().toISOString().slice(0, 16));
+        setDateTime(crisisModalDefaultDate || new Date().toISOString().slice(0, 16));
         setTookMedication(null);
         setMedicationTaken('');
         setWentToEmergency(null);
@@ -63,7 +63,10 @@ export function CrisisModal() {
 
   const handleClose = () => {
     setIsCrisisModalOpen(false);
-    setTimeout(() => setEditingCrisisId(null), 300); // Clear after animation
+    setTimeout(() => {
+      setEditingCrisisId(null);
+      setCrisisModalDefaultDate(null);
+    }, 300); // Clear after animation
   };
 
   const handleToggleExam = (exam: string) => {

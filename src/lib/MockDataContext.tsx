@@ -69,6 +69,8 @@ interface MockDataContextType {
   toggleLike: (id: string) => void;
   isCrisisModalOpen: boolean;
   setIsCrisisModalOpen: (val: boolean) => void;
+  crisisModalDefaultDate: string | null;
+  setCrisisModalDefaultDate: (val: string | null) => void;
   editingCrisisId: string | null;
   setEditingCrisisId: (val: string | null) => void;
   isMedModalOpen: boolean;
@@ -108,6 +110,7 @@ const MockDataContext = createContext<MockDataContextType | undefined>(undefined
 
 export function MockDataProvider({ children }: { children: ReactNode }) {
   const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
+  const [crisisModalDefaultDate, setCrisisModalDefaultDate] = useState<string | null>(null);
   const [editingCrisisId, setEditingCrisisId] = useState<string | null>(null);
   const [isMedModalOpen, setIsMedModalOpen] = useState(false);
 
@@ -255,6 +258,7 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
       extraMeds, addExtraMed, deleteExtraMed,
       posts, addPost, toggleLike,
       isCrisisModalOpen, setIsCrisisModalOpen,
+      crisisModalDefaultDate, setCrisisModalDefaultDate,
       editingCrisisId, setEditingCrisisId,
       isMedModalOpen, setIsMedModalOpen,
       profileData, updateProfile,
