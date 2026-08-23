@@ -23,6 +23,20 @@ export type Medication = {
   taken: boolean;
 };
 
+export type Appointment = {
+  id: string;
+  doctorId: string;
+  dateTime: string;
+  reason: string;
+};
+
+export type ExtraMed = {
+  id: string;
+  name: string;
+  dose: string;
+  dateTime: string;
+};
+
 export type Post = {
   id: string;
   author: string;
@@ -44,6 +58,12 @@ interface MockDataContextType {
   medications: Medication[];
   addMedication: (med: Omit<Medication, 'id'>) => void;
   toggleMedication: (id: string) => void;
+  appointments: Appointment[];
+  addAppointment: (appt: Omit<Appointment, 'id'>) => void;
+  deleteAppointment: (id: string) => void;
+  extraMeds: ExtraMed[];
+  addExtraMed: (med: Omit<ExtraMed, 'id'>) => void;
+  deleteExtraMed: (id: string) => void;
   posts: Post[];
   addPost: (content: string) => void;
   toggleLike: (id: string) => void;
@@ -115,16 +135,26 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     { id: '2', name: 'Duloxetina', dose: '60mg', time: '20:00 PM', taken: false }
   ]);
 
+  const [appointments, setAppointments] = useState<Appointment[]>([
+    { id: '1', doctorId: '1', dateTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16), reason: 'Control mensual' }
+  ]);
+
+  const [extraMeds, setExtraMeds] = useState<ExtraMed[]>([
+    { id: '1', name: 'Paracetamol', dose: '1g', dateTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16) }
+  ]);
+
   const [posts, setPosts] = useState<Post[]>([
     { 
       id: '1', author: 'Dr. Alex Rivera', role: 'Reumatólogo', isDoctor: true,
-      content: 'Recordatorio importante: La fatiga es un síntoma tan real como el dolor físico. Escucha a tu cuerpo.',
-      likes: 124, comments: 28, isLiked: false, timeAgo: 'Hace 2h', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Alex'
+      content: 'Acabo de subir una nueva rutina de ejercicios suaves para pacientes con artritis reumatoide. Recuerden no forzar las articulaciones durante la primera semana. https://www.youtube.com/watch?v=dQw4w9WgXcQ', 
+      timeAgo: 'Hace 2h', likes: 24, comments: 0, isLiked: false,
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d'
     },
     { 
-      id: '2', author: 'María S.', role: 'Paciente', isDoctor: false,
-      content: 'Hoy descubrí que hacer estiramientos muy suaves en agua tibia me ayuda muchísimo con la rigidez matutina.',
-      likes: 45, comments: 12, isLiked: true, timeAgo: 'Hace 5h', avatar: 'https://api.dicebear.com/9.x/initials/svg?seed=MS'
+      id: '2', author: 'Dra. Carmen Soto', role: 'Especialista en Dolor', isDoctor: true,
+      content: 'El manejo del dolor crónico requiere un enfoque multidisciplinario. En mi último post en Instagram explico cómo la meditación guiada puede reducir los picos de dolor hasta en un 30%. https://www.instagram.com/p/C123456789/', 
+      timeAgo: 'Hace 5h', likes: 89, comments: 0, isLiked: true,
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d'
     }
   ]);
 
@@ -179,6 +209,22 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     setMedications(medications.map(m => m.id === id ? { ...m, taken: !m.taken } : m));
   };
 
+  const addAppointment = (appt: Omit<Appointment, 'id'>) => {
+    setAppointments([...appointments, { ...appt, id: Math.random().toString() }]);
+  };
+
+  const deleteAppointment = (id: string) => {
+    setAppointments(appointments.filter(a => a.id !== id));
+  };
+
+  const addExtraMed = (med: Omit<ExtraMed, 'id'>) => {
+    setExtraMeds([...extraMeds, { ...med, id: Math.random().toString() }]);
+  };
+
+  const deleteExtraMed = (id: string) => {
+    setExtraMeds(extraMeds.filter(m => m.id !== id));
+  };
+
   const addPost = (content: string) => {
     setPosts([
       {
@@ -202,6 +248,8 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     <MockDataContext.Provider value={{
       crises, addCrisis, updateCrisis, deleteCrisis,
       medications, addMedication, toggleMedication,
+      appointments, addAppointment, deleteAppointment,
+      extraMeds, addExtraMed, deleteExtraMed,
       posts, addPost, toggleLike,
       isCrisisModalOpen, setIsCrisisModalOpen,
       editingCrisisId, setEditingCrisisId,

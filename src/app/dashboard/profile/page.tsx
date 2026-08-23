@@ -200,9 +200,14 @@ export default function ProfilePage() {
               <p>Alergias: {profileData.allergies || 'Ninguna'}</p>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl shadow-inner mb-6">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://thepain.app/emergency/jd" alt="QR Code" className="w-48 h-48" />
+            <div className="bg-white p-4 rounded-2xl shadow-inner mb-4">
+              {/* Dynamic QR Code using an external API for demo purposes */}
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('https://thepain.app/emergency/jane-doe')}`} alt="QR Code" className="w-48 h-48" />
             </div>
+
+            <a href="/emergency/jane-doe" target="_blank" className="mb-4 text-xs font-bold text-brand-500 hover:text-brand-600 flex items-center gap-1 bg-brand-50 dark:bg-brand-900/20 px-3 py-1.5 rounded-full transition-colors">
+              thepain.app/emergency/jane-doe
+            </a>
             
             <p className="text-xs text-center text-gray-500">
               Avisar a: <br/>
