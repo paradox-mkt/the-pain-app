@@ -1,6 +1,11 @@
-import { Settings, QrCode, ShieldAlert, LogOut, ChevronRight } from 'lucide-react';
+'use client';
+
+import { useState } from 'react';
+import { Settings, QrCode, ShieldAlert, LogOut, ChevronRight, X } from 'lucide-react';
 
 export default function ProfilePage() {
+  const [showQR, setShowQR] = useState(false);
+
   return (
     <div className="p-4 space-y-6 pb-20 animate-in fade-in duration-500">
       <header className="pt-2 flex justify-between items-center">
@@ -32,7 +37,10 @@ export default function ProfilePage() {
           <p className="text-sm text-gray-700 dark:text-gray-300">
             Muestra este código QR o enlace a personal médico en caso de emergencia para que vean tu historial, alergias y contactos.
           </p>
-          <button className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors">
+          <button 
+            onClick={() => setShowQR(true)}
+            className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors"
+          >
             <QrCode size={18} />
             Ver mi Tarjeta QR
           </button>
@@ -59,6 +67,25 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
+
+      {showQR && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl p-8 flex flex-col items-center relative animate-in zoom-in-95 duration-200 border border-red-500/20">
+            <button onClick={() => setShowQR(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-white">
+              <X size={24} />
+            </button>
+            <ShieldAlert size={48} className="text-red-500 mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-2">Escanea para Ayudar</h2>
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-8">
+              Al escanear este código se mostrará el tipo de sangre, alergias, y el contacto de emergencia de Jane Doe.
+            </p>
+            <div className="bg-white p-4 rounded-2xl shadow-inner mb-6">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://thepain.app/emergency/jd" alt="QR Code" className="w-48 h-48" />
+            </div>
+            <p className="text-xs font-mono text-gray-400 bg-gray-100 dark:bg-slate-800 px-3 py-1 rounded">ID: #8492-TP</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import BottomNav from '@/components/BottomNav';
 import DesktopSidebar from '@/components/DesktopSidebar';
+import Providers from '@/components/Providers';
 
 export default function DashboardLayout({
   children,
@@ -7,7 +8,8 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex h-screen h-[100dvh] bg-gray-50 dark:bg-slate-950 overflow-hidden">
+    <Providers>
+      <div className="flex h-screen h-[100dvh] bg-gray-50 dark:bg-slate-950 overflow-hidden">
       {/* Desktop Sidebar (hidden on mobile) */}
       <DesktopSidebar />
       
@@ -23,6 +25,6 @@ export default function DashboardLayout({
         {/* Mobile Bottom Navigation (hidden on desktop) */}
         <BottomNav />
       </div>
-    </div>
+    </Providers>
   );
 }

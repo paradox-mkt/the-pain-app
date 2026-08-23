@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { CalendarDays, BookOpen, MessageCircle, User, Calendar as CalendarIcon, Activity } from 'lucide-react';
+import { useMockData } from '@/lib/MockDataContext';
 
 export default function DesktopSidebar() {
   const pathname = usePathname();
+  const { setIsCrisisModalOpen } = useMockData();
 
   const tabs = [
     { name: 'Resumen', href: '/dashboard', icon: CalendarDays },
@@ -25,7 +27,10 @@ export default function DesktopSidebar() {
       </div>
 
       <div className="px-4 mb-6">
-        <button className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium shadow-lg shadow-red-500/20 flex items-center justify-center gap-2 transition-colors">
+        <button 
+          onClick={() => setIsCrisisModalOpen(true)}
+          className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium shadow-lg shadow-red-500/20 flex items-center justify-center gap-2 transition-colors"
+        >
           <Activity size={18} />
           Registrar Crisis
         </button>
