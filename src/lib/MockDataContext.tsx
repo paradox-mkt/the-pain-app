@@ -60,9 +60,11 @@ interface MockDataContextType {
   toggleMedication: (id: string) => void;
   appointments: Appointment[];
   addAppointment: (appt: Omit<Appointment, 'id'>) => void;
+  updateAppointment: (id: string, appt: Partial<Appointment>) => void;
   deleteAppointment: (id: string) => void;
   extraMeds: ExtraMed[];
   addExtraMed: (med: Omit<ExtraMed, 'id'>) => void;
+  updateExtraMed: (id: string, med: Partial<ExtraMed>) => void;
   deleteExtraMed: (id: string) => void;
   posts: Post[];
   addPost: (content: string) => void;
@@ -224,12 +226,20 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     setAppointments([...appointments, { ...appt, id: Math.random().toString() }]);
   };
 
+  const updateAppointment = (id: string, appt: Partial<Appointment>) => {
+    setAppointments(appointments.map(a => a.id === id ? { ...a, ...appt } : a));
+  };
+
   const deleteAppointment = (id: string) => {
     setAppointments(appointments.filter(a => a.id !== id));
   };
 
   const addExtraMed = (med: Omit<ExtraMed, 'id'>) => {
     setExtraMeds([...extraMeds, { ...med, id: Math.random().toString() }]);
+  };
+
+  const updateExtraMed = (id: string, med: Partial<ExtraMed>) => {
+    setExtraMeds(extraMeds.map(m => m.id === id ? { ...m, ...med } : m));
   };
 
   const deleteExtraMed = (id: string) => {
@@ -259,8 +269,8 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
     <MockDataContext.Provider value={{
       crises, addCrisis, updateCrisis, deleteCrisis,
       medications, addMedication, toggleMedication,
-      appointments, addAppointment, deleteAppointment,
-      extraMeds, addExtraMed, deleteExtraMed,
+      appointments, addAppointment, updateAppointment, deleteAppointment,
+      extraMeds, addExtraMed, updateExtraMed, deleteExtraMed,
       posts, addPost, toggleLike,
       isCrisisModalOpen, setIsCrisisModalOpen,
       crisisModalDefaultDate, setCrisisModalDefaultDate,

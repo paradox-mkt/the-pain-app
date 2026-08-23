@@ -1,11 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Activity, Calendar as CalendarIcon, Pill, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Activity, Calendar as CalendarIcon, Pill, Clock, Trash2, AlertTriangle } from 'lucide-react';
 import { useMockData } from '@/lib/MockDataContext';
 
 export default function CalendarPage() {
-  const { crises, appointments, extraMeds, setIsCrisisModalOpen, setCrisisModalDefaultDate, addAppointment, addExtraMed, doctors } = useMockData();
+  const { 
+    crises, appointments, extraMeds, 
+    setIsCrisisModalOpen, setCrisisModalDefaultDate, setEditingCrisisId,
+    addAppointment, updateAppointment, deleteAppointment, 
+    addExtraMed, updateExtraMed, deleteExtraMed, 
+    doctors 
+  } = useMockData();
+  
   const [view, setView] = useState<'month' | 'week' | 'day'>('day');
   
   // Date state
@@ -13,9 +20,18 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Add event modal state
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showExtraMedModal, setShowExtraMedModal] = useState(false);
+
+  // Edit states
+  const [editingApptId, setEditingApptId] = useState<string | null>(null);
+  const [editingMedId, setEditingMedId] = useState<string | null>(null);
+
+  // Delete confirm states
+  const [showApptDeleteConfirm, setShowApptDeleteConfirm] = useState(false);
+  const [apptDeleteText, setApptDeleteText] = useState('');
+  const [showMedDeleteConfirm, setShowMedDeleteConfirm] = useState(false);
+  const [medDeleteText, setMedDeleteText] = useState('');
 
   // Forms state
   const [apptForm, setApptForm] = useState({ doctorId: '', dateTime: '', reason: '' });
@@ -65,11 +81,17 @@ export default function CalendarPage() {
   };
 
   const openApptModalForSelected = () => {
+    setEditingApptId(null);
+    setShowApptDeleteConfirm(false);
+    setApptDeleteText('');
     setApptForm({ doctorId: '', dateTime: `${formatDateString(selectedDate)}T09:00`, reason: '' });
     setShowAppointmentModal(true);
   };
 
   const openMedModalForSelected = () => {
+    setEditingMedId(null);
+    setShowMedDeleteConfirm(false);
+    setMedDeleteText('');
     setMedForm({ name: '', dose: '', dateTime: `${formatDateString(selectedDate)}T12:00` });
     setShowExtraMedModal(true);
   };
@@ -79,18 +101,59 @@ export default function CalendarPage() {
     setIsCrisisModalOpen(true);
   };
 
+  const handleEditEvent = (event: any) => {
+    if (event.type === 'crisis') {
+      setEditingCrisisId(event.data.id);
+      setIsCrisisModalOpen(true);
+    } else if (event.type === 'appointment') {
+      setEditingApptId(event.data.id);
+      setApptForm({ doctorId: event.data.doctorId, dateTime: event.data.dateTime, reason: event.data.reason || '' });
+      setShowApptDeleteConfirm(false);
+      setApptDeleteText('');
+      setShowAppointmentModal(true);
+    } else if (event.type === 'med') {
+      setEditingMedId(event.data.id);
+      setMedForm({ name: event.data.name, dose: event.data.dose || '', dateTime: event.data.dateTime });
+      setShowMedDeleteConfirm(false);
+      setMedDeleteText('');
+      setShowExtraMedModal(true);
+    }
+  };
+
   const handleAddAppt = (e: React.FormEvent) => {
     e.preventDefault();
     if (!apptForm.doctorId || !apptForm.dateTime) return;
-    addAppointment(apptForm);
+    if (editingApptId) {
+      updateAppointment(editingApptId, apptForm);
+    } else {
+      addAppointment(apptForm);
+    }
     setShowAppointmentModal(false);
+  };
+
+  const handleDeleteAppt = () => {
+    if (editingApptId && apptDeleteText === 'BORRAR') {
+      deleteAppointment(editingApptId);
+      setShowAppointmentModal(false);
+    }
   };
 
   const handleAddMed = (e: React.FormEvent) => {
     e.preventDefault();
     if (!medForm.name || !medForm.dateTime) return;
-    addExtraMed(medForm);
+    if (editingMedId) {
+      updateExtraMed(editingMedId, medForm);
+    } else {
+      addExtraMed(medForm);
+    }
     setShowExtraMedModal(false);
+  };
+
+  const handleDeleteMed = () => {
+    if (editingMedId && medDeleteText === 'BORRAR') {
+      deleteExtraMed(editingMedId);
+      setShowExtraMedModal(false);
+    }
   };
 
   const { dayCrises: selCrises, dayAppts: selAppts, dayMeds: selMeds } = getEventsForDay(selectedDate);
@@ -251,8 +314,8 @@ export default function CalendarPage() {
                 </div>
               ) : (
                 allEventsForSelected.map((event, idx) => (
-                  <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-gray-50 dark:border-slate-900 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 shadow-sm
+                  <div key={idx} onClick={() => handleEditEvent(event)} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active cursor-pointer">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-gray-50 dark:border-slate-900 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 shadow-sm transition-transform group-hover:scale-110
                       ${event.type === 'crisis' ? 'bg-red-500' : event.type === 'appointment' ? 'bg-purple-500' : 'bg-green-500'}"
                       style={{ backgroundColor: event.type === 'crisis' ? '#ef4444' : event.type === 'appointment' ? '#a855f7' : '#22c55e' }}
                     >
@@ -261,7 +324,7 @@ export default function CalendarPage() {
                       {event.type === 'med' && <Pill size={16} className="text-white" />}
                     </div>
                     
-                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 hover:border-brand-500 transition-colors group-hover:shadow-md">
                       <div className="flex items-center gap-2 mb-2 text-xs font-bold text-gray-400 dark:text-gray-500">
                         <Clock size={14} /> {event.time}
                       </div>
@@ -301,31 +364,72 @@ export default function CalendarPage() {
       {/* Appointment Modal */}
       {showAppointmentModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-slate-800">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <CalendarIcon className="text-purple-500" /> Añadir Cita
+                <CalendarIcon className="text-purple-500" /> {editingApptId ? 'Editar Cita' : 'Añadir Cita'}
               </h2>
               <button onClick={() => setShowAppointmentModal(false)} className="text-gray-500 text-xl font-bold p-2">&times;</button>
             </div>
-            <form onSubmit={handleAddAppt} className="p-4 space-y-4">
-              <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Doctor</label>
-                <select required value={apptForm.doctorId} onChange={e => setApptForm({...apptForm, doctorId: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white">
-                  <option value="">Selecciona un médico</option>
-                  {doctors.map(d => <option key={d.id} value={d.id}>{d.name} ({d.specialty})</option>)}
-                </select>
+            
+            <div className="overflow-y-auto flex-1">
+              {!showApptDeleteConfirm ? (
+                <form id="appt-form" onSubmit={handleAddAppt} className="p-4 space-y-4">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Doctor</label>
+                    <select required value={apptForm.doctorId} onChange={e => setApptForm({...apptForm, doctorId: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white">
+                      <option value="">Selecciona un médico</option>
+                      {doctors.map(d => <option key={d.id} value={d.id}>{d.name} ({d.specialty})</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Fecha y Hora</label>
+                    <input required type="datetime-local" value={apptForm.dateTime} onChange={e => setApptForm({...apptForm, dateTime: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Motivo (Opcional)</label>
+                    <input type="text" value={apptForm.reason} onChange={e => setApptForm({...apptForm, reason: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" placeholder="Ej: Control mensual" />
+                  </div>
+                </form>
+              ) : (
+                <div className="p-6 text-center space-y-6 animate-in slide-in-from-right-4">
+                  <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <AlertTriangle size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">¿Eliminar esta cita?</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Esta acción no se puede deshacer.</p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl text-left">
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Escribe <strong className="text-red-500">BORRAR</strong></p>
+                    <input 
+                      type="text" 
+                      value={apptDeleteText}
+                      onChange={(e) => setApptDeleteText(e.target.value)}
+                      placeholder="Escribe BORRAR aquí"
+                      className="w-full p-3 border border-red-200 dark:border-red-800/50 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-center font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => { setShowApptDeleteConfirm(false); setApptDeleteText(''); }} className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 text-gray-800 dark:text-white font-semibold rounded-xl">Cancelar</button>
+                    <button onClick={handleDeleteAppt} disabled={apptDeleteText !== 'BORRAR'} className="flex-1 py-3 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white font-bold rounded-xl disabled:cursor-not-allowed">Confirmar</button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {!showApptDeleteConfirm && (
+              <div className="p-4 border-t border-gray-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 flex flex-col gap-3">
+                <button form="appt-form" type="submit" className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl transition-colors">
+                  {editingApptId ? 'Guardar Cambios' : 'Añadir Cita'}
+                </button>
+                {editingApptId && (
+                  <button onClick={() => setShowApptDeleteConfirm(true)} className="w-full py-2 flex items-center justify-center gap-2 text-red-500 hover:text-red-600 font-semibold transition-colors">
+                    <Trash2 size={18} /> Eliminar Cita
+                  </button>
+                )}
               </div>
-              <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Fecha y Hora</label>
-                <input required type="datetime-local" value={apptForm.dateTime} onChange={e => setApptForm({...apptForm, dateTime: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Motivo (Opcional)</label>
-                <input type="text" value={apptForm.reason} onChange={e => setApptForm({...apptForm, reason: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" placeholder="Ej: Control mensual" />
-              </div>
-              <button type="submit" className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl mt-2 transition-colors">Guardar Cita</button>
-            </form>
+            )}
           </div>
         </div>
       )}
@@ -333,28 +437,69 @@ export default function CalendarPage() {
       {/* Extra Medication Modal */}
       {showExtraMedModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-slate-800">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <Pill className="text-green-500" /> Medicación Extra
+                <Pill className="text-green-500" /> {editingMedId ? 'Editar Medicación' : 'Medicación Extra'}
               </h2>
               <button onClick={() => setShowExtraMedModal(false)} className="text-gray-500 text-xl font-bold p-2">&times;</button>
             </div>
-            <form onSubmit={handleAddMed} className="p-4 space-y-4">
-              <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Medicamento</label>
-                <input required type="text" value={medForm.name} onChange={e => setMedForm({...medForm, name: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" placeholder="Ej: Paracetamol" />
+            
+            <div className="overflow-y-auto flex-1">
+              {!showMedDeleteConfirm ? (
+                <form id="med-form" onSubmit={handleAddMed} className="p-4 space-y-4">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Medicamento</label>
+                    <input required type="text" value={medForm.name} onChange={e => setMedForm({...medForm, name: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" placeholder="Ej: Paracetamol" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Dosis (Opcional)</label>
+                    <input type="text" value={medForm.dose} onChange={e => setMedForm({...medForm, dose: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" placeholder="Ej: 1 pastilla" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Fecha y Hora</label>
+                    <input required type="datetime-local" value={medForm.dateTime} onChange={e => setMedForm({...medForm, dateTime: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" />
+                  </div>
+                </form>
+              ) : (
+                <div className="p-6 text-center space-y-6 animate-in slide-in-from-right-4">
+                  <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <AlertTriangle size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">¿Eliminar este registro?</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Esta acción no se puede deshacer.</p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl text-left">
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Escribe <strong className="text-red-500">BORRAR</strong></p>
+                    <input 
+                      type="text" 
+                      value={medDeleteText}
+                      onChange={(e) => setMedDeleteText(e.target.value)}
+                      placeholder="Escribe BORRAR aquí"
+                      className="w-full p-3 border border-red-200 dark:border-red-800/50 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-center font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => { setShowMedDeleteConfirm(false); setMedDeleteText(''); }} className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 text-gray-800 dark:text-white font-semibold rounded-xl">Cancelar</button>
+                    <button onClick={handleDeleteMed} disabled={medDeleteText !== 'BORRAR'} className="flex-1 py-3 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white font-bold rounded-xl disabled:cursor-not-allowed">Confirmar</button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {!showMedDeleteConfirm && (
+              <div className="p-4 border-t border-gray-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 flex flex-col gap-3">
+                <button form="med-form" type="submit" className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition-colors">
+                  {editingMedId ? 'Guardar Cambios' : 'Registrar Toma'}
+                </button>
+                {editingMedId && (
+                  <button onClick={() => setShowMedDeleteConfirm(true)} className="w-full py-2 flex items-center justify-center gap-2 text-red-500 hover:text-red-600 font-semibold transition-colors">
+                    <Trash2 size={18} /> Eliminar Toma
+                  </button>
+                )}
               </div>
-              <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Dosis (Opcional)</label>
-                <input type="text" value={medForm.dose} onChange={e => setMedForm({...medForm, dose: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" placeholder="Ej: 1 pastilla" />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Fecha y Hora</label>
-                <input required type="datetime-local" value={medForm.dateTime} onChange={e => setMedForm({...medForm, dateTime: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" />
-              </div>
-              <button type="submit" className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl mt-2 transition-colors">Registrar Toma</button>
-            </form>
+            )}
           </div>
         </div>
       )}
