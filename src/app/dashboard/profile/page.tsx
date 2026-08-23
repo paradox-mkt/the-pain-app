@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, QrCode, ShieldAlert, LogOut, ChevronRight, X, Edit3, Save, Phone } from 'lucide-react';
+import { Settings, QrCode, ShieldAlert, LogOut, ChevronRight, X, Edit3, Save, Phone, Download } from 'lucide-react';
 import { useMockData } from '@/lib/MockDataContext';
 import { DoctorsModal, RemindersModal } from '@/components/ProfileModals';
 
@@ -25,6 +25,25 @@ export default function ProfilePage() {
   const handleSave = () => {
     updateProfile(editForm);
     setIsEditing(false);
+  };
+
+  const handleDownloadQR = async () => {
+    try {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent('https://thepain.app/emergency/jane-doe')}`;
+      const response = await fetch(qrUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = 'Mi_QR_ThePainApp.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Error al descargar el QR', error);
+      alert('Hubo un problema descargando el QR. Inténtalo de nuevo.');
+    }
   };
 
   return (
@@ -209,12 +228,19 @@ export default function ProfilePage() {
               {profileData.diseases && <p className="mt-1">Enfermedades: <span className="font-semibold text-brand-500">{profileData.diseases}</span></p>}
             </div>
 
-            <div className="bg-white p-4 rounded-2xl shadow-inner mb-4">
+            <div className="bg-white p-4 rounded-2xl shadow-inner mb-4 relative group">
               {/* Dynamic QR Code using an external API for demo purposes */}
               <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('https://thepain.app/emergency/jane-doe')}`} alt="QR Code" className="w-48 h-48" />
+              <button 
+                onClick={handleDownloadQR}
+                className="absolute -bottom-3 -right-3 bg-brand-500 hover:bg-brand-600 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-110 flex items-center justify-center"
+                title="Descargar QR"
+              >
+                <Download size={20} />
+              </button>
             </div>
 
-            <a href="/emergency/jane-doe" target="_blank" className="mb-4 text-xs font-bold text-brand-500 hover:text-brand-600 flex items-center gap-1 bg-brand-50 dark:bg-brand-900/20 px-3 py-1.5 rounded-full transition-colors">
+            <a href="/emergency/jane-doe" target="_blank" className="mb-4 text-xs font-bold text-brand-500 hover:text-brand-600 flex items-center gap-1 bg-brand-50 dark:bg-brand-900/20 px-3 py-1.5 rounded-full transition-colors mt-2">
               thepain.app/emergency/jane-doe
             </a>
             
