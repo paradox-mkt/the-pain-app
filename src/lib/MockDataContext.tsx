@@ -126,7 +126,7 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
       id: '2', intensity: 5, 
       dateTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16), 
       notes: 'Rigidez matutina prolongada.', 
-      bodyParts: ['Espalda Baja'],
+      bodyParts: ['Espalda baja'],
       tookMedication: false,
       wentToEmergency: false
     }
