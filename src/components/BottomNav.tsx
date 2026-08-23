@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { CalendarDays, BookOpen, MessageCircle, User, Calendar as CalendarIcon, Pill, Stethoscope } from 'lucide-react';
+import { SpoonIcon } from '@/components/SpoonIcon';
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -11,6 +12,7 @@ export default function BottomNav() {
     { name: 'Resumen', href: '/dashboard', icon: CalendarDays },
     { name: 'Calendario', href: '/dashboard/calendar', icon: CalendarIcon },
     { name: 'Medicinas', href: '/dashboard/medicines', icon: Pill },
+    { name: 'Cucharas', href: '/dashboard/spoons', icon: SpoonIcon },
     { name: 'Crisis', href: '/dashboard/diary', icon: BookOpen },
     { name: 'Comunidad', href: '/dashboard/feed', icon: MessageCircle },
     { name: 'Médicos', href: '/dashboard/doctors', icon: Stethoscope },

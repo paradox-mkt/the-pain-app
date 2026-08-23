@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { CalendarDays, BookOpen, MessageCircle, User, Calendar as CalendarIcon, Activity, Pill, Stethoscope } from 'lucide-react';
+import { SpoonIcon } from '@/components/SpoonIcon';
 import { useMockData } from '@/lib/MockDataContext';
 
 export default function DesktopSidebar() {
@@ -13,6 +14,7 @@ export default function DesktopSidebar() {
     { name: 'Resumen', href: '/dashboard', icon: CalendarDays },
     { name: 'Calendario', href: '/dashboard/calendar', icon: CalendarIcon },
     { name: 'Medicinas', href: '/dashboard/medicines', icon: Pill },
+    { name: 'Cucharas', href: '/dashboard/spoons', icon: SpoonIcon },
     { name: 'Crisis', href: '/dashboard/diary', icon: BookOpen },
     { name: 'Comunidad', href: '/dashboard/feed', icon: MessageCircle },
     { name: 'Mis Médicos', href: '/dashboard/doctors', icon: Stethoscope },

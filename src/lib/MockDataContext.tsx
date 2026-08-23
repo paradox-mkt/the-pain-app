@@ -52,6 +52,17 @@ export type Appointment = {
   reason: string;
 };
 
+export type SpoonTask = {
+  id: string;
+  name: string;
+  cost: number;
+};
+
+export type SpoonLog = {
+  used: number;
+  borrowed: number;
+};
+
 export type ExtraMed = {
   id: string;
   name: string;
@@ -134,6 +145,15 @@ interface MockDataContextType {
   removeDoctor: (id: string) => void;
   pushEnabled: boolean;
   setPushEnabled: (val: boolean) => void;
+
+  // Spoon Theory
+  baseSpoons: number;
+  setBaseSpoons: (val: number) => void;
+  spoonTasks: SpoonTask[];
+  addSpoonTask: (task: Omit<SpoonTask, 'id'>) => void;
+  removeSpoonTask: (id: string) => void;
+  spoonLogs: Record<string, SpoonLog>;
+  logSpoons: (date: string, used: number, borrowed: number) => void;
 }
 
 const MockDataContext = createContext<MockDataContextType | undefined>(undefined);
@@ -218,6 +238,33 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
   ]);
 
   const [pushEnabled, setPushEnabled] = useState(false);
+
+  // Spoon Theory Data
+  const [baseSpoons, setBaseSpoons] = useState(12);
+  const [spoonTasks, setSpoonTasks] = useState<SpoonTask[]>([
+    { id: 's1', name: 'Bañarse y vestirse', cost: 2 },
+    { id: 's2', name: 'Cocinar almuerzo', cost: 3 },
+    { id: 's3', name: 'Trabajar/Estudiar (media jornada)', cost: 4 },
+    { id: 's4', name: 'Salir a caminar', cost: 2 },
+    { id: 's5', name: 'Lavar ropa', cost: 2 },
+    { id: 's6', name: 'Socializar', cost: 3 },
+  ]);
+  const [spoonLogs, setSpoonLogs] = useState<Record<string, SpoonLog>>({});
+
+  const addSpoonTask = (task: Omit<SpoonTask, 'id'>) => {
+    setSpoonTasks(prev => [...prev, { ...task, id: Date.now().toString() }]);
+  };
+
+  const removeSpoonTask = (id: string) => {
+    setSpoonTasks(prev => prev.filter(t => t.id !== id));
+  };
+
+  const logSpoons = (date: string, used: number, borrowed: number) => {
+    setSpoonLogs(prev => ({
+      ...prev,
+      [date]: { used, borrowed }
+    }));
+  };
 
   const updateProfile = (data: Partial<typeof profileData>) => {
     setProfileData(prev => ({ ...prev, ...data }));
@@ -341,7 +388,10 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
       isMedModalOpen, setIsMedModalOpen,
       profileData, updateProfile,
       doctors, addDoctor, updateDoctor, removeDoctor,
-      pushEnabled, setPushEnabled
+      pushEnabled, setPushEnabled,
+      baseSpoons, setBaseSpoons,
+      spoonTasks, addSpoonTask, removeSpoonTask,
+      spoonLogs, logSpoons
     }}>
       {children}
     </MockDataContext.Provider>
