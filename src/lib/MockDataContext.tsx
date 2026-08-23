@@ -2,15 +2,20 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type Crisis = {
+export type Crisis = {
   id: string;
   intensity: number;
-  date: string;
+  dateTime: string;
   notes: string;
   bodyParts: string[];
+  tookMedication?: boolean;
+  medicationTaken?: string;
+  wentToEmergency?: boolean;
+  emergencyTreatment?: string;
+  examsDone?: string[];
 };
 
-type Medication = {
+export type Medication = {
   id: string;
   name: string;
   dose: string;
@@ -18,7 +23,7 @@ type Medication = {
   taken: boolean;
 };
 
-type Post = {
+export type Post = {
   id: string;
   author: string;
   role: string;
@@ -34,6 +39,8 @@ type Post = {
 interface MockDataContextType {
   crises: Crisis[];
   addCrisis: (crisis: Omit<Crisis, 'id'>) => void;
+  updateCrisis: (id: string, crisis: Partial<Crisis>) => void;
+  deleteCrisis: (id: string) => void;
   medications: Medication[];
   addMedication: (med: Omit<Medication, 'id'>) => void;
   toggleMedication: (id: string) => void;
@@ -42,6 +49,8 @@ interface MockDataContextType {
   toggleLike: (id: string) => void;
   isCrisisModalOpen: boolean;
   setIsCrisisModalOpen: (val: boolean) => void;
+  editingCrisisId: string | null;
+  setEditingCrisisId: (val: string | null) => void;
   isMedModalOpen: boolean;
   setIsMedModalOpen: (val: boolean) => void;
 }
@@ -50,11 +59,28 @@ const MockDataContext = createContext<MockDataContextType | undefined>(undefined
 
 export function MockDataProvider({ children }: { children: ReactNode }) {
   const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
+  const [editingCrisisId, setEditingCrisisId] = useState<string | null>(null);
   const [isMedModalOpen, setIsMedModalOpen] = useState(false);
 
   const [crises, setCrises] = useState<Crisis[]>([
-    { id: '1', intensity: 8, date: 'Hace 2 días', notes: 'Dolor articular fuerte en rodillas y manos. Fatiga extrema.', bodyParts: ['Rodillas', 'Manos'] },
-    { id: '2', intensity: 5, date: 'Hace 1 semana', notes: 'Rigidez matutina prolongada.', bodyParts: ['Espalda Baja'] }
+    { 
+      id: '1', intensity: 8, 
+      dateTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16), 
+      notes: 'Dolor articular fuerte en rodillas y manos. Fatiga extrema.', 
+      bodyParts: ['Rodillas', 'Manos'],
+      tookMedication: true,
+      medicationTaken: 'Ibuprofeno 600mg',
+      wentToEmergency: false,
+      examsDone: []
+    },
+    { 
+      id: '2', intensity: 5, 
+      dateTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16), 
+      notes: 'Rigidez matutina prolongada.', 
+      bodyParts: ['Espalda Baja'],
+      tookMedication: false,
+      wentToEmergency: false
+    }
   ]);
 
   const [medications, setMedications] = useState<Medication[]>([
@@ -76,7 +102,15 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
   ]);
 
   const addCrisis = (crisis: Omit<Crisis, 'id'>) => {
-    setCrises([{ ...crisis, id: Math.random().toString() }, ...crises]);
+    setCrises([{ ...crisis, id: Math.random().toString() }, ...crises].sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()));
+  };
+
+  const updateCrisis = (id: string, crisis: Partial<Crisis>) => {
+    setCrises(crises.map(c => c.id === id ? { ...c, ...crisis } : c).sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()));
+  };
+
+  const deleteCrisis = (id: string) => {
+    setCrises(crises.filter(c => c.id !== id));
   };
 
   const addMedication = (med: Omit<Medication, 'id'>) => {
@@ -108,10 +142,11 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
 
   return (
     <MockDataContext.Provider value={{
-      crises, addCrisis,
+      crises, addCrisis, updateCrisis, deleteCrisis,
       medications, addMedication, toggleMedication,
       posts, addPost, toggleLike,
       isCrisisModalOpen, setIsCrisisModalOpen,
+      editingCrisisId, setEditingCrisisId,
       isMedModalOpen, setIsMedModalOpen
     }}>
       {children}
