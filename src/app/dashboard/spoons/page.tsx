@@ -11,6 +11,12 @@ export default function SpoonsPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [newTaskName, setNewTaskName] = useState('');
   const [newTaskCost, setNewTaskCost] = useState('1');
+  
+  const [lastActionCost, setLastActionCost] = useState<number | null>(null);
+  
+  // Modals state
+  const [confirmTask, setConfirmTask] = useState<{name: string, cost: number} | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Today logic
   const todayStr = new Date().toISOString().split('T')[0];
@@ -25,7 +31,13 @@ export default function SpoonsPage() {
 
   const availableSpoonsToday = baseSpoons - yesterdaysLog.borrowed;
   
-  const handleTaskClick = (cost: number) => {
+  const handleTaskClick = (task: {name: string, cost: number}) => {
+    setConfirmTask(task);
+  };
+
+  const confirmAndApplyTask = () => {
+    if (!confirmTask) return;
+    const cost = confirmTask.cost;
     let newUsed = todaysLog.used + cost;
     let newBorrowed = 0;
     
@@ -34,10 +46,28 @@ export default function SpoonsPage() {
     }
 
     logSpoons(todayStr, newUsed, newBorrowed);
+    setLastActionCost(cost);
+    setConfirmTask(null);
   };
 
-  const handleResetToday = () => {
+  const handleUndo = () => {
+    if (lastActionCost === null) return;
+    let newUsed = todaysLog.used - lastActionCost;
+    if (newUsed < 0) newUsed = 0;
+    
+    let newBorrowed = 0;
+    if (newUsed > availableSpoonsToday) {
+      newBorrowed = newUsed - availableSpoonsToday;
+    }
+    
+    logSpoons(todayStr, newUsed, newBorrowed);
+    setLastActionCost(null);
+  };
+
+  const confirmReset = () => {
     logSpoons(todayStr, 0, 0);
+    setLastActionCost(null);
+    setShowResetConfirm(false);
   };
 
   const handleAddTask = (e: React.FormEvent) => {
@@ -78,10 +108,18 @@ export default function SpoonsPage() {
               <span className="text-gray-500">/ {availableSpoonsToday}</span>
             </div>
           </div>
-          <button onClick={handleResetToday} className="flex items-center gap-1 text-xs text-gray-500 hover:text-brand-500 transition-colors bg-gray-100 dark:bg-slate-800 px-3 py-1.5 rounded-full font-medium">
+          <button onClick={() => setShowResetConfirm(true)} className="flex items-center gap-1 text-xs text-gray-500 hover:text-brand-500 transition-colors bg-gray-100 dark:bg-slate-800 px-3 py-1.5 rounded-full font-medium">
             <RotateCcw size={14} /> Reiniciar
           </button>
         </div>
+
+        {lastActionCost !== null && (
+          <div className="mb-4 flex justify-end">
+            <button onClick={handleUndo} className="text-xs text-brand-600 dark:text-brand-400 font-semibold flex items-center gap-1 bg-brand-50 dark:bg-brand-900/20 px-3 py-1.5 rounded-full hover:bg-brand-100 transition-colors">
+              <RotateCcw size={12} /> Deshacer última acción
+            </button>
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-2 justify-center">
           {Array.from({ length: totalSpoonsToRender }).map((_, i) => {
@@ -141,7 +179,7 @@ export default function SpoonsPage() {
           {spoonTasks.map(task => (
             <button 
               key={task.id}
-              onClick={() => handleTaskClick(task.cost)}
+              onClick={() => handleTaskClick(task)}
               className="group relative bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:border-yellow-400 hover:shadow-md transition-all text-left flex flex-col justify-between min-h-[100px]"
             >
               <span className="font-semibold text-gray-800 dark:text-gray-200 text-sm leading-tight group-hover:text-yellow-600 transition-colors">{task.name}</span>
@@ -186,6 +224,49 @@ export default function SpoonsPage() {
           </button>
         </form>
       </div>
+
+      {/* Modals */}
+      {confirmTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-sm shadow-xl space-y-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center">
+              ¿Gastar energía?
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 text-center text-sm">
+              ¿Deseas restar <strong>{confirmTask.cost} cucharas</strong> por la actividad "{confirmTask.name}"?
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmTask(null)} className="flex-1 p-3 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700 transition-colors">
+                No, cancelar
+              </button>
+              <button onClick={confirmAndApplyTask} className="flex-1 p-3 rounded-xl font-semibold text-white bg-yellow-500 hover:bg-yellow-600 transition-colors">
+                Sí, restar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-sm shadow-xl space-y-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center">
+              ¿Reiniciar cucharas?
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 text-center text-sm">
+              ¿Estás seguro que deseas reiniciar todas tus cucharas del día de hoy? Esta acción borrará el registro de hoy.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowResetConfirm(false)} className="flex-1 p-3 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700 transition-colors">
+                Cancelar
+              </button>
+              <button onClick={confirmReset} className="flex-1 p-3 rounded-xl font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors">
+                Sí, reiniciar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
