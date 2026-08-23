@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, BookOpen, MessageCircle, User, Calendar as CalendarIcon, Activity, Pill } from 'lucide-react';
+import { CalendarDays, BookOpen, MessageCircle, User, Calendar as CalendarIcon, Activity, Pill, Stethoscope } from 'lucide-react';
 import { useMockData } from '@/lib/MockDataContext';
 
 export default function DesktopSidebar() {
@@ -15,6 +15,7 @@ export default function DesktopSidebar() {
     { name: 'Medicinas', href: '/dashboard/medicines', icon: Pill },
     { name: 'Crisis', href: '/dashboard/diary', icon: BookOpen },
     { name: 'Comunidad', href: '/dashboard/feed', icon: MessageCircle },
+    { name: 'Mis Médicos', href: '/dashboard/doctors', icon: Stethoscope },
     { name: 'Perfil', href: '/dashboard/profile', icon: User },
   ];
 

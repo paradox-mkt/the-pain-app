@@ -12,7 +12,25 @@ export default function MedicinesPage() {
   const [editingMedId, setEditingMedId] = useState<string | null>(null);
   
   // Forms state
-  const [medForm, setMedForm] = useState({ name: '', dose: '', frequency: '24h', firstDoseTime: '08:00', isActive: true });
+  const [medForm, setMedForm] = useState<{
+    name: string;
+    dose: string;
+    medicationType: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+    frequency: string;
+    specificDayOfWeek: number;
+    startDate: string;
+    firstDoseTime: string;
+    isActive: boolean;
+  }>({
+    name: '',
+    dose: '',
+    medicationType: 'daily',
+    frequency: '24h',
+    specificDayOfWeek: 1, // Lunes
+    startDate: new Date().toISOString().split('T')[0],
+    firstDoseTime: '08:00',
+    isActive: true
+  });
   
   // Delete state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -25,9 +43,23 @@ export default function MedicinesPage() {
     { value: '6h', label: 'Cuatro veces al día (cada 6h)' }
   ];
 
+  const daysOfWeek = [
+    { value: 1, label: 'Lunes' },
+    { value: 2, label: 'Martes' },
+    { value: 3, label: 'Miércoles' },
+    { value: 4, label: 'Jueves' },
+    { value: 5, label: 'Viernes' },
+    { value: 6, label: 'Sábado' },
+    { value: 7, label: 'Domingo' }
+  ];
+
   const handleOpenAddModal = () => {
     setEditingMedId(null);
-    setMedForm({ name: '', dose: '', frequency: '24h', firstDoseTime: '08:00', isActive: true });
+    setMedForm({
+      name: '', dose: '', medicationType: 'daily', frequency: '24h', 
+      specificDayOfWeek: 1, startDate: new Date().toISOString().split('T')[0], 
+      firstDoseTime: '08:00', isActive: true
+    });
     setShowDeleteConfirm(false);
     setDeleteText('');
     setShowModal(true);
@@ -35,7 +67,16 @@ export default function MedicinesPage() {
 
   const handleOpenEditModal = (med: BaseMedication) => {
     setEditingMedId(med.id);
-    setMedForm({ name: med.name, dose: med.dose, frequency: med.frequency, firstDoseTime: med.firstDoseTime, isActive: med.isActive });
+    setMedForm({ 
+      name: med.name, 
+      dose: med.dose, 
+      medicationType: med.medicationType, 
+      frequency: med.frequency, 
+      specificDayOfWeek: med.specificDayOfWeek || 1, 
+      startDate: med.startDate || new Date().toISOString().split('T')[0], 
+      firstDoseTime: med.firstDoseTime, 
+      isActive: med.isActive 
+    });
     setShowDeleteConfirm(false);
     setDeleteText('');
     setShowModal(true);
@@ -45,6 +86,9 @@ export default function MedicinesPage() {
     e.preventDefault();
     if (!medForm.name || !medForm.dose || !medForm.firstDoseTime) return;
     
+    // Si es biweekly o monthly necesitamos la startDate
+    if ((medForm.medicationType === 'biweekly' || medForm.medicationType === 'monthly') && !medForm.startDate) return;
+
     if (editingMedId) {
       updateBaseMedication(editingMedId, medForm);
     } else {
@@ -69,7 +113,7 @@ export default function MedicinesPage() {
       <header className="pt-2 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mis Medicinas</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Gestiona tus tratamientos recurrentes</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Gestiona tus tratamientos continuos</p>
         </div>
         <button 
           onClick={handleOpenAddModal}
@@ -88,7 +132,18 @@ export default function MedicinesPage() {
           </div>
         ) : (
           baseMedications.map(med => {
-            const freqLabel = frequencies.find(f => f.value === med.frequency)?.label || med.frequency;
+            let freqLabel = '';
+            if (med.medicationType === 'daily') {
+              freqLabel = frequencies.find(f => f.value === med.frequency)?.label || med.frequency;
+            } else if (med.medicationType === 'weekly') {
+              freqLabel = `Semanal (Los ${daysOfWeek.find(d => d.value === med.specificDayOfWeek)?.label}s)`;
+            } else if (med.medicationType === 'biweekly') {
+              freqLabel = `Quincenal (Desde ${med.startDate})`;
+            } else if (med.medicationType === 'monthly') {
+              const startDay = med.startDate ? new Date(med.startDate).getDate() : '';
+              freqLabel = `Mensual (Día ${startDay} del mes)`;
+            }
+
             return (
               <div key={med.id} className={`flex justify-between items-start bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border transition-colors ${med.isActive ? 'border-brand-500/30' : 'border-gray-100 dark:border-slate-700 opacity-60 grayscale-[30%]'}`}>
                 <div className="flex-1">
@@ -102,8 +157,8 @@ export default function MedicinesPage() {
                     </div>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1 ml-[52px]">
-                    <p>Frecuencia: <strong className="text-gray-700 dark:text-gray-300">{freqLabel}</strong></p>
-                    <p>Primera toma: <strong className="text-gray-700 dark:text-gray-300">{med.firstDoseTime}</strong></p>
+                    <p>Repetición: <strong className="text-gray-700 dark:text-gray-300">{freqLabel}</strong></p>
+                    <p>Hora de toma: <strong className="text-gray-700 dark:text-gray-300">{med.firstDoseTime}</strong></p>
                   </div>
                 </div>
 
@@ -145,25 +200,61 @@ export default function MedicinesPage() {
                 <form id="base-med-form" onSubmit={handleSubmit} className="p-4 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2">
-                      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Nombre</label>
-                      <input required type="text" value={medForm.name} onChange={e => setMedForm({...medForm, name: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" placeholder="Ej: Pregabalina" />
+                      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Nombre de la Medicina</label>
+                      <input required type="text" value={medForm.name} onChange={e => setMedForm({...medForm, name: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" placeholder="Ej: Pregabalina, Humira..." />
                     </div>
-                    <div>
-                      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Dosis (mg/g)</label>
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Dosis</label>
                       <input required type="text" value={medForm.dose} onChange={e => setMedForm({...medForm, dose: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" placeholder="Ej: 75mg" />
                     </div>
-                    <div>
-                      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">1ra Toma (Hora)</label>
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Hora de Toma</label>
                       <input required type="time" value={medForm.firstDoseTime} onChange={e => setMedForm({...medForm, firstDoseTime: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" />
                     </div>
+
+                    {/* Frecuencia Principal */}
                     <div className="col-span-2">
-                      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Frecuencia</label>
-                      <select required value={medForm.frequency} onChange={e => setMedForm({...medForm, frequency: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white">
-                        {frequencies.map(f => (
-                          <option key={f.value} value={f.value}>{f.label}</option>
-                        ))}
+                      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Tipo de Tratamiento</label>
+                      <select required value={medForm.medicationType} onChange={e => setMedForm({...medForm, medicationType: e.target.value as any})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white">
+                        <option value="daily">Diario (Tomar todos los días)</option>
+                        <option value="weekly">Semanal (Una vez por semana)</option>
+                        <option value="biweekly">Quincenal (Cada 15 días)</option>
+                        <option value="monthly">Mensual (Una vez al mes)</option>
                       </select>
                     </div>
+
+                    {/* Opciones según tipo */}
+                    {medForm.medicationType === 'daily' && (
+                      <div className="col-span-2 animate-in fade-in zoom-in-95">
+                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Cada cuantas horas</label>
+                        <select required value={medForm.frequency} onChange={e => setMedForm({...medForm, frequency: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white">
+                          {frequencies.map(f => (
+                            <option key={f.value} value={f.value}>{f.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {medForm.medicationType === 'weekly' && (
+                      <div className="col-span-2 animate-in fade-in zoom-in-95">
+                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Día de la Semana</label>
+                        <select required value={medForm.specificDayOfWeek} onChange={e => setMedForm({...medForm, specificDayOfWeek: parseInt(e.target.value)})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white">
+                          {daysOfWeek.map(d => (
+                            <option key={d.value} value={d.value}>{d.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {(medForm.medicationType === 'biweekly' || medForm.medicationType === 'monthly') && (
+                      <div className="col-span-2 animate-in fade-in zoom-in-95">
+                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">
+                          {medForm.medicationType === 'biweekly' ? 'Fecha de la próxima toma (Inicio)' : 'Día del mes (Basado en la fecha)'}
+                        </label>
+                        <input required type="date" value={medForm.startDate} onChange={e => setMedForm({...medForm, startDate: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" />
+                      </div>
+                    )}
+
                     <div className="col-span-2 pt-2 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between">
                       <div>
                         <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Medicina Activa</p>
@@ -186,7 +277,7 @@ export default function MedicinesPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">¿Eliminar esta medicina?</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Si lo eliminas, dejarás de recibir recordatorios y se borrará del historial de hoy. Esta acción no se puede deshacer.</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Si lo eliminas, dejarás de recibir recordatorios. Esta acción no se puede deshacer.</p>
                   </div>
                   <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl text-left">
                     <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Escribe <strong className="text-red-500">BORRAR</strong></p>

@@ -39,22 +39,55 @@ export default function DashboardPage() {
         times.push(d.toTimeString().slice(0, 5));
       };
 
-      if (med.frequency === '24h') addTime(0);
-      else if (med.frequency === '12h') { addTime(0); addTime(12); }
-      else if (med.frequency === '8h') { addTime(0); addTime(8); addTime(16); }
-      else if (med.frequency === '6h') { addTime(0); addTime(6); addTime(12); addTime(18); }
+      let shouldAdd = false;
 
-      times.forEach(time => {
-        const log = medicationLogs.find(l => l.baseMedId === med.id && l.date === dateStr && l.time === time);
-        medsList.push({
-          id: `${med.id}-${time}`,
-          baseMedId: med.id,
-          name: med.name,
-          dose: med.dose,
-          time,
-          taken: !!log?.taken
+      if (!med.medicationType || med.medicationType === 'daily') {
+        shouldAdd = true;
+        if (med.frequency === '24h') addTime(0);
+        else if (med.frequency === '12h') { addTime(0); addTime(12); }
+        else if (med.frequency === '8h') { addTime(0); addTime(8); addTime(16); }
+        else if (med.frequency === '6h') { addTime(0); addTime(6); addTime(12); addTime(18); }
+      } else if (med.medicationType === 'weekly') {
+        const currentDayOfWeek = todayDate.getDay() || 7; // 1-7 (Mon-Sun)
+        if (currentDayOfWeek === med.specificDayOfWeek) {
+          shouldAdd = true;
+          addTime(0);
+        }
+      } else if (med.medicationType === 'biweekly' && med.startDate) {
+        const startDate = new Date(med.startDate);
+        // Reset times to compare dates easily
+        startDate.setHours(0,0,0,0);
+        const compareDate = new Date(todayDate);
+        compareDate.setHours(0,0,0,0);
+        
+        const diffTime = compareDate.getTime() - startDate.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays >= 0 && diffDays % 14 === 0) {
+          shouldAdd = true;
+          addTime(0);
+        }
+      } else if (med.medicationType === 'monthly' && med.startDate) {
+        const startDay = new Date(med.startDate).getDate();
+        if (todayDate.getDate() === startDay) {
+          shouldAdd = true;
+          addTime(0);
+        }
+      }
+
+      if (shouldAdd) {
+        times.forEach(time => {
+          const log = medicationLogs.find(l => l.baseMedId === med.id && l.date === dateStr && l.time === time);
+          medsList.push({
+            id: `${med.id}-${time}`,
+            baseMedId: med.id,
+            name: med.name,
+            dose: med.dose,
+            time,
+            taken: !!log?.taken
+          });
         });
-      });
+      }
     });
 
     return medsList.sort((a, b) => a.time.localeCompare(b.time));

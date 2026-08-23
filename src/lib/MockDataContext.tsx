@@ -19,7 +19,10 @@ export type BaseMedication = {
   id: string;
   name: string;
   dose: string;
-  frequency: string; // '24h', '12h', '8h', '6h'
+  medicationType: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+  frequency: string; // '24h', '12h', '8h', '6h' - only used for daily
+  specificDayOfWeek?: number; // 0-6 (Sun-Sat) or 1-7 depending on frontend mapping, let's use 1-7 for Mon-Sun
+  startDate?: string; // 'YYYY-MM-DD'
   firstDoseTime: string; // '08:00'
   isActive: boolean;
 };
@@ -151,9 +154,9 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
   ]);
 
   const [baseMedications, setBaseMedications] = useState<BaseMedication[]>([
-    { id: '1', name: 'Pregabalina', dose: '75mg', frequency: '24h', firstDoseTime: '08:00', isActive: true },
-    { id: '2', name: 'Duloxetina', dose: '60mg', frequency: '24h', firstDoseTime: '20:00', isActive: true },
-    { id: '3', name: 'Tramadol', dose: '50mg', frequency: '12h', firstDoseTime: '08:00', isActive: false }
+    { id: '1', name: 'Pregabalina', dose: '75mg', medicationType: 'daily', frequency: '24h', firstDoseTime: '08:00', isActive: true },
+    { id: '2', name: 'Duloxetina', dose: '60mg', medicationType: 'daily', frequency: '24h', firstDoseTime: '20:00', isActive: true },
+    { id: '3', name: 'Tramadol', dose: '50mg', medicationType: 'daily', frequency: '12h', firstDoseTime: '08:00', isActive: false }
   ]);
 
   const [medicationLogs, setMedicationLogs] = useState<MedicationLog[]>([
