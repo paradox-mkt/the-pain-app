@@ -1,8 +1,8 @@
 'use client';
 
-import { Bell, Calendar, Pill, Plus, Activity, PlusCircle, User } from 'lucide-react';
+import { Bell, Calendar, Pill, Plus, Activity, PlusCircle, User, ChevronLeft, ChevronRight, Dna } from 'lucide-react';
 import { useMockData } from '@/lib/MockDataContext';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
@@ -18,16 +18,36 @@ export default function DashboardPage() {
     doctors
   } = useMockData();
 
-  const [selectedDay, setSelectedDay] = useState(new Date().getDate());
-  
-  // Calculate today's meds dynamically based on selected date
-  // For simplicity in the demo, we assume the selected day is always in the current month/year
-  const todayDate = new Date();
-  todayDate.setDate(selectedDay);
-  const dateStr = todayDate.toISOString().split('T')[0];
+  // Initialize to today
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  // Generate the 7 days of the currently viewed week
+  const weekDays = useMemo(() => {
+    const days = [];
+    const today = new Date();
+    // Start of current week (Monday)
+    const currentDayOfWeek = today.getDay() || 7; 
+    const startOfCurrentWeek = new Date(today);
+    startOfCurrentWeek.setDate(today.getDate() - currentDayOfWeek + 1);
+    
+    // Apply offset
+    const startOfWeek = new Date(startOfCurrentWeek);
+    startOfWeek.setDate(startOfWeek.getDate() + (weekOffset * 7));
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startOfWeek);
+      d.setDate(startOfWeek.getDate() + i);
+      days.push(d);
+    }
+    return days;
+  }, [weekOffset]);
+
+  const dateStr = selectedDate.toISOString().split('T')[0];
+  const realToday = new Date().toISOString().split('T')[0];
 
   const todaysMeds = useMemo(() => {
-    const medsList: { id: string, baseMedId: string, name: string, dose: string, time: string, taken: boolean }[] = [];
+    const medsList: { id: string, baseMedId: string, name: string, dose: string, time: string, taken: boolean, presentation: string }[] = [];
     
     baseMedications.filter(m => m.isActive).forEach(med => {
       let times: string[] = [];
@@ -48,7 +68,7 @@ export default function DashboardPage() {
         else if (med.frequency === '8h') { addTime(0); addTime(8); addTime(16); }
         else if (med.frequency === '6h') { addTime(0); addTime(6); addTime(12); addTime(18); }
       } else if (med.medicationType === 'weekly') {
-        const currentDayOfWeek = todayDate.getDay() || 7; // 1-7 (Mon-Sun)
+        const currentDayOfWeek = selectedDate.getDay() || 7; // 1-7 (Mon-Sun)
         if (currentDayOfWeek === med.specificDayOfWeek) {
           shouldAdd = true;
           addTime(0);
@@ -57,7 +77,7 @@ export default function DashboardPage() {
         const startDate = new Date(med.startDate);
         // Reset times to compare dates easily
         startDate.setHours(0,0,0,0);
-        const compareDate = new Date(todayDate);
+        const compareDate = new Date(selectedDate);
         compareDate.setHours(0,0,0,0);
         
         const diffTime = compareDate.getTime() - startDate.getTime();
@@ -69,7 +89,7 @@ export default function DashboardPage() {
         }
       } else if (med.medicationType === 'monthly' && med.startDate) {
         const startDay = new Date(med.startDate).getDate();
-        if (todayDate.getDate() === startDay) {
+        if (selectedDate.getDate() === startDay) {
           shouldAdd = true;
           addTime(0);
         }
@@ -84,7 +104,8 @@ export default function DashboardPage() {
             name: med.name,
             dose: med.dose,
             time,
-            taken: !!log?.taken
+            taken: !!log?.taken,
+            presentation: med.presentation || 'pill'
           });
         });
       }
@@ -98,6 +119,16 @@ export default function DashboardPage() {
   const todaysAppointments = useMemo(() => appointments.filter(a => a.dateTime.startsWith(dateStr)), [appointments, dateStr]);
 
   const handleToggleMed = (baseMedId: string, time: string) => {
+    // 2-day block logic
+    const selectedTime = new Date(dateStr).getTime();
+    const todayTime = new Date(realToday).getTime();
+    const diffDays = (todayTime - selectedTime) / (1000 * 60 * 60 * 24);
+    
+    if (diffDays > 2) {
+      alert("No puedes alterar registros de medicamentos que pasaron hace más de 2 días. Esto es para asegurar que tu adherencia refleje la realidad.");
+      return;
+    }
+
     toggleMedicationLog(baseMedId, dateStr, time);
   };
 
@@ -118,23 +149,32 @@ export default function DashboardPage() {
       {/* Mini Calendar Strip */}
       <section>
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Esta Semana</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            {weekOffset === 0 ? 'Esta Semana' : weekOffset === -1 ? 'Semana Pasada' : weekOffset === 1 ? 'Próxima Semana' : `Semana (${weekOffset > 0 ? '+' : ''}${weekOffset})`}
+          </h2>
+          <div className="flex gap-2">
+            <button onClick={() => setWeekOffset(w => w - 1)} className="p-1 rounded bg-gray-100 dark:bg-slate-800 text-gray-600 hover:bg-gray-200 transition-colors"><ChevronLeft size={18}/></button>
+            <button onClick={() => { setWeekOffset(0); setSelectedDate(new Date()); }} className="px-2 text-xs font-bold text-brand-500 bg-brand-50 dark:bg-brand-900/30 rounded">HOY</button>
+            <button onClick={() => setWeekOffset(w => w + 1)} className="p-1 rounded bg-gray-100 dark:bg-slate-800 text-gray-600 hover:bg-gray-200 transition-colors"><ChevronRight size={18}/></button>
+          </div>
         </div>
         <div className="flex justify-between gap-2">
-          {[19, 20, 21, 22, 23, 24, 25].map((day, i) => {
-            const isToday = day === new Date().getDate();
-            const isSelected = day === selectedDay;
+          {weekDays.map((dateObj, i) => {
+            const day = dateObj.getDate();
+            const dateStrIter = dateObj.toISOString().split('T')[0];
+            const isToday = dateStrIter === realToday;
+            const isSelected = dateStrIter === dateStr;
             const days = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
             return (
               <button 
-                key={day} 
-                onClick={() => setSelectedDay(day)}
+                key={dateStrIter} 
+                onClick={() => setSelectedDate(dateObj)}
                 className={`flex flex-col items-center justify-center p-2 rounded-xl min-w-[3rem] transition-all ${
                   isSelected 
                     ? 'bg-brand-500 text-white shadow-md shadow-brand-500/30 scale-110' 
                     : isToday 
                       ? 'bg-brand-100 text-brand-600 dark:bg-brand-900/30'
-                      : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-slate-700'
+                      : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-slate-700 hover:border-brand-500/30'
                 }`}
               >
                 <span className="text-xs font-medium mb-1">{days[i]}</span>
@@ -169,11 +209,14 @@ export default function DashboardPage() {
               }`}
             >
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${med.taken ? 'bg-gray-100 dark:bg-slate-700 text-gray-400' : 'bg-brand-50 dark:bg-brand-900/30 text-brand-500'}`}>
-                  <Pill size={24} />
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${med.taken ? 'bg-gray-100 dark:bg-slate-700 text-gray-400' : 'bg-brand-50 dark:bg-brand-900/30 text-brand-500'} ${med.presentation === 'biologic' && !med.taken ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' : ''}`}>
+                  {med.presentation === 'biologic' ? <Dna size={24} /> : <Pill size={24} />}
                 </div>
                 <div>
-                  <h3 className={`font-semibold ${med.taken ? 'text-gray-500 line-through' : 'text-gray-900 dark:text-white'}`}>{med.name}</h3>
+                  <h3 className={`font-semibold flex items-center gap-2 ${med.taken ? 'text-gray-500 line-through' : 'text-gray-900 dark:text-white'}`}>
+                    {med.name}
+                    {med.presentation === 'biologic' && <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold ${med.taken ? 'bg-gray-200 text-gray-500 dark:bg-slate-700 dark:text-gray-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'}`}>Biológico</span>}
+                  </h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{med.dose}</p>
                 </div>
               </div>
