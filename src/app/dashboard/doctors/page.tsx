@@ -60,7 +60,6 @@ export default function DoctorsPage() {
                 <select 
                   value={phoneCountryCode} onChange={e => setPhoneCountryCode(e.target.value)}
                   className="w-1/3 p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
-                  className="w-1/3 p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
                 >
                   {COUNTRY_CODES.map(country => (
                     <option key={country.code} value={country.code}>{country.label}</option>
