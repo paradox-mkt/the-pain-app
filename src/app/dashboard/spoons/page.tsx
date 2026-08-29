@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useMockData } from '@/lib/MockDataContext';
 import { Settings, Plus, RotateCcw, AlertTriangle, Info, Trash2 } from 'lucide-react';
 import { SpoonIcon } from '@/components/SpoonIcon';
+import { PacingCard } from '@/components/PacingCard';
 
 export default function SpoonsPage() {
   const { baseSpoons, setBaseSpoons, spoonTasks, addSpoonTask, removeSpoonTask, spoonLogs, logSpoons } = useMockData();
@@ -153,6 +154,11 @@ export default function SpoonsPage() {
             </p>
           </div>
         )}
+
+        <PacingCard 
+          currentSpoons={Math.max(0, availableSpoonsToday - todaysLog.used)} 
+          totalSpoons={availableSpoonsToday} 
+        />
       </div>
 
       {showSettings && (
