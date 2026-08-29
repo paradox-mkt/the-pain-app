@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Settings, QrCode, ShieldAlert, LogOut, ChevronRight, X, Edit3, Save, Phone, Download, MessageCircle } from 'lucide-react';
 import { useMockData } from '@/lib/MockDataContext';
 import { RemindersModal } from '@/components/ProfileModals';
+import { COUNTRY_CODES } from '@/lib/countryCodes';
 
 export default function ProfilePage() {
   const { profileData, updateProfile } = useMockData();
@@ -144,13 +145,9 @@ export default function ProfilePage() {
                   <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Teléfono Emg.</label>
                   <div className="flex gap-2">
                     <select value={editForm.emergencyContactCountryCode || '+51'} onChange={e => setEditForm({...editForm, emergencyContactCountryCode: e.target.value})} className="w-1/3 p-2 rounded border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm">
-                      <option value="+51">+51 🇵🇪</option>
-                      <option value="+52">+52 🇲🇽</option>
-                      <option value="+1">+1 🇺🇸/🇨🇦</option>
-                      <option value="+34">+34 🇪🇸</option>
-                      <option value="+54">+54 🇦🇷</option>
-                      <option value="+57">+57 🇨🇴</option>
-                      <option value="+56">+56 🇨🇱</option>
+                      {COUNTRY_CODES.map(country => (
+                        <option key={country.code} value={country.code}>{country.label}</option>
+                      ))}
                     </select>
                     <input type="text" value={editForm.emergencyContactPhone} onChange={e => setEditForm({...editForm, emergencyContactPhone: e.target.value})} className="w-2/3 p-2 rounded border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm" />
                   </div>

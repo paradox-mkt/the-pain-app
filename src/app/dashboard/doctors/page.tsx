@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useMockData } from '@/lib/MockDataContext';
+import { useMockData } from '@/lib/MockDataContext';
 import { Stethoscope, Trash2, Plus, Edit2, Check, Star } from 'lucide-react';
+import { COUNTRY_CODES } from '@/lib/countryCodes';
 
 export default function DoctorsPage() {
   const { doctors, addDoctor, updateDoctor, removeDoctor } = useMockData();
@@ -59,14 +61,11 @@ export default function DoctorsPage() {
                 <select 
                   value={phoneCountryCode} onChange={e => setPhoneCountryCode(e.target.value)}
                   className="w-1/3 p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                  className="w-1/3 p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
                 >
-                  <option value="+51">+51 🇵🇪</option>
-                  <option value="+52">+52 🇲🇽</option>
-                  <option value="+1">+1 🇺🇸/🇨🇦</option>
-                  <option value="+34">+34 🇪🇸</option>
-                  <option value="+54">+54 🇦🇷</option>
-                  <option value="+57">+57 🇨🇴</option>
-                  <option value="+56">+56 🇨🇱</option>
+                  {COUNTRY_CODES.map(country => (
+                    <option key={country.code} value={country.code}>{country.label}</option>
+                  ))}
                 </select>
                 <input 
                   type="text" 
@@ -105,13 +104,9 @@ export default function DoctorsPage() {
                         <input type="text" value={editForm.specialty} onChange={e => setEditForm({...editForm, specialty: e.target.value})} className="w-full p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Especialidad" required />
                         <div className="flex gap-2">
                           <select value={editForm.phoneCountryCode} onChange={e => setEditForm({...editForm, phoneCountryCode: e.target.value})} className="w-1/3 p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                            <option value="+51">+51 🇵🇪</option>
-                            <option value="+52">+52 🇲🇽</option>
-                            <option value="+1">+1 🇺🇸/🇨🇦</option>
-                            <option value="+34">+34 🇪🇸</option>
-                            <option value="+54">+54 🇦🇷</option>
-                            <option value="+57">+57 🇨🇴</option>
-                            <option value="+56">+56 🇨🇱</option>
+                            {COUNTRY_CODES.map(country => (
+                              <option key={country.code} value={country.code}>{country.label}</option>
+                            ))}
                           </select>
                           <input type="text" value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="w-2/3 p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Teléfono" />
                         </div>

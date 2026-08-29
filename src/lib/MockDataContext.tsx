@@ -35,6 +35,7 @@ export type BaseMedication = {
   startDate?: string; // 'YYYY-MM-DD'
   firstDoseTime: string; // '08:00'
   isActive: boolean;
+  presentation: 'pill' | 'injection' | 'biologic' | 'drops' | 'syrup' | 'cream' | 'inhaler';
 };
 
 export type MedicationLog = {
@@ -186,9 +187,10 @@ export function MockDataProvider({ children }: { children: ReactNode }) {
   ]);
 
   const [baseMedications, setBaseMedications] = useState<BaseMedication[]>([
-    { id: '1', name: 'Pregabalina', dose: '75mg', medicationType: 'daily', frequency: '24h', firstDoseTime: '08:00', isActive: true },
-    { id: '2', name: 'Duloxetina', dose: '60mg', medicationType: 'daily', frequency: '24h', firstDoseTime: '20:00', isActive: true },
-    { id: '3', name: 'Tramadol', dose: '50mg', medicationType: 'daily', frequency: '12h', firstDoseTime: '08:00', isActive: false }
+    { id: '1', name: 'Pregabalina', dose: '75mg', medicationType: 'daily', frequency: '24h', firstDoseTime: '08:00', isActive: true, presentation: 'pill' },
+    { id: '2', name: 'Duloxetina', dose: '60mg', medicationType: 'daily', frequency: '24h', firstDoseTime: '20:00', isActive: true, presentation: 'pill' },
+    { id: '3', name: 'Tramadol', dose: '50mg', medicationType: 'daily', frequency: '12h', firstDoseTime: '08:00', isActive: false, presentation: 'pill' },
+    { id: '4', name: 'Humira (Adalimumab)', dose: '40mg', medicationType: 'biweekly', frequency: '24h', startDate: new Date().toISOString().split('T')[0], firstDoseTime: '10:00', isActive: true, presentation: 'biologic' }
   ]);
 
   const [medicationLogs, setMedicationLogs] = useState<MedicationLog[]>([

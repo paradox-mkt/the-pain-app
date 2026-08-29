@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useMockData } from '@/lib/MockDataContext';
-import { Pill, Plus, Edit2, Trash2, AlertTriangle, X } from 'lucide-react';
+import { Pill, Plus, Edit2, Trash2, AlertTriangle, X, Syringe, Dna, Droplet, TestTube, Activity, SprayCan } from 'lucide-react';
 import type { BaseMedication } from '@/lib/MockDataContext';
+import { calculateAdherence } from '@/lib/adherenceLogic';
 
 export default function MedicinesPage() {
-  const { baseMedications, addBaseMedication, updateBaseMedication, deleteBaseMedication } = useMockData();
+  const { baseMedications, addBaseMedication, updateBaseMedication, deleteBaseMedication, medicationLogs } = useMockData();
   
   const [showModal, setShowModal] = useState(false);
   const [editingMedId, setEditingMedId] = useState<string | null>(null);
@@ -21,6 +22,7 @@ export default function MedicinesPage() {
     startDate: string;
     firstDoseTime: string;
     isActive: boolean;
+    presentation: BaseMedication['presentation'];
   }>({
     name: '',
     dose: '',
@@ -29,7 +31,8 @@ export default function MedicinesPage() {
     specificDayOfWeek: 1, // Lunes
     startDate: new Date().toISOString().split('T')[0],
     firstDoseTime: '08:00',
-    isActive: true
+    isActive: true,
+    presentation: 'pill'
   });
   
   // Delete state
@@ -58,7 +61,7 @@ export default function MedicinesPage() {
     setMedForm({
       name: '', dose: '', medicationType: 'daily', frequency: '24h', 
       specificDayOfWeek: 1, startDate: new Date().toISOString().split('T')[0], 
-      firstDoseTime: '08:00', isActive: true
+      firstDoseTime: '08:00', isActive: true, presentation: 'pill'
     });
     setShowDeleteConfirm(false);
     setDeleteText('');
@@ -75,7 +78,8 @@ export default function MedicinesPage() {
       specificDayOfWeek: med.specificDayOfWeek || 1, 
       startDate: med.startDate || new Date().toISOString().split('T')[0], 
       firstDoseTime: med.firstDoseTime, 
-      isActive: med.isActive 
+      isActive: med.isActive,
+      presentation: med.presentation || 'pill'
     });
     setShowDeleteConfirm(false);
     setDeleteText('');
@@ -148,17 +152,42 @@ export default function MedicinesPage() {
               <div key={med.id} className={`flex justify-between items-start bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border transition-colors ${med.isActive ? 'border-brand-500/30' : 'border-gray-100 dark:border-slate-700 opacity-60 grayscale-[30%]'}`}>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${med.isActive ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-500' : 'bg-gray-100 dark:bg-slate-700 text-gray-400'}`}>
-                      <Pill size={20} />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${med.isActive ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-500' : 'bg-gray-100 dark:bg-slate-700 text-gray-400'} ${med.presentation === 'biologic' ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' : ''}`}>
+                      {med.presentation === 'pill' && <Pill size={20} />}
+                      {med.presentation === 'injection' && <Syringe size={20} />}
+                      {med.presentation === 'biologic' && <Dna size={20} />}
+                      {med.presentation === 'drops' && <Droplet size={20} />}
+                      {med.presentation === 'syrup' && <TestTube size={20} />}
+                      {med.presentation === 'cream' && <Activity size={20} />}
+                      {med.presentation === 'inhaler' && <SprayCan size={20} />}
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-900 dark:text-white">{med.name}</h3>
+                      <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        {med.name} 
+                        {med.presentation === 'biologic' && <span className="text-[10px] uppercase tracking-wider bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 px-2 py-0.5 rounded-full font-bold">Biológico</span>}
+                      </h3>
                       <p className="text-sm font-medium text-brand-500">{med.dose}</p>
                     </div>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1 ml-[52px]">
                     <p>Repetición: <strong className="text-gray-700 dark:text-gray-300">{freqLabel}</strong></p>
                     <p>Hora de toma: <strong className="text-gray-700 dark:text-gray-300">{med.firstDoseTime}</strong></p>
+                    
+                    {/* Adherence Badge */}
+                    {(() => {
+                      const adherence = calculateAdherence(med, medicationLogs);
+                      if (adherence.status === 'pending') {
+                        return <div className="mt-2 inline-block bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-md text-[10px] font-bold">Adherencia: Pendiente</div>;
+                      }
+                      const colorClass = adherence.status === 'good' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                                         adherence.status === 'warning' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                                         'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400';
+                      return (
+                        <div className={`mt-2 inline-block px-2 py-1 rounded-md text-[10px] font-bold ${colorClass}`}>
+                          Adherencia: {adherence.percentage}%
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -210,6 +239,19 @@ export default function MedicinesPage() {
                     <div className="col-span-2 sm:col-span-1">
                       <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Hora de Toma</label>
                       <input required type="time" value={medForm.firstDoseTime} onChange={e => setMedForm({...medForm, firstDoseTime: e.target.value})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" />
+                    </div>
+
+                    <div className="col-span-2">
+                      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-1">Presentación</label>
+                      <select required value={medForm.presentation} onChange={e => setMedForm({...medForm, presentation: e.target.value as any})} className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white font-medium">
+                        <option value="pill">Pastilla / Cápsula</option>
+                        <option value="injection">Inyección</option>
+                        <option value="biologic">Biológico (Terapia especializada)</option>
+                        <option value="drops">Gotas</option>
+                        <option value="syrup">Jarabe</option>
+                        <option value="cream">Crema / Ungüento</option>
+                        <option value="inhaler">Inhalador</option>
+                      </select>
                     </div>
 
                     {/* Frecuencia Principal */}
