@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useMockData } from '@/lib/MockDataContext';
-import { useMockData } from '@/lib/MockDataContext';
 import { Stethoscope, Trash2, Plus, Edit2, Check, Star } from 'lucide-react';
 import { COUNTRY_CODES } from '@/lib/countryCodes';
 
