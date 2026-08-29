@@ -18,6 +18,7 @@ export default function SpoonsPage() {
   // Modals state
   const [confirmTask, setConfirmTask] = useState<{name: string, cost: number} | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [deletingTask, setDeletingTask] = useState<{id: string, name: string} | null>(null);
 
   // Today logic
   const todayStr = new Date().toISOString().split('T')[0];
@@ -194,7 +195,7 @@ export default function SpoonsPage() {
               </div>
               
               <div 
-                onClick={(e) => { e.stopPropagation(); removeSpoonTask(task.id); }}
+                onClick={(e) => { e.stopPropagation(); setDeletingTask({ id: task.id, name: task.name }); }}
                 className="absolute top-2 right-2 p-1.5 text-gray-300 hover:text-red-500 bg-white/80 dark:bg-slate-900/80 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <Trash2 size={14} />
@@ -268,6 +269,27 @@ export default function SpoonsPage() {
               </button>
               <button onClick={confirmReset} className="flex-1 p-3 rounded-xl font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors">
                 Sí, reiniciar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deletingTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-sm shadow-xl space-y-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center">
+              ¿Eliminar actividad?
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 text-center text-sm">
+              ¿Estás seguro que deseas borrar la actividad "{deletingTask.name}" permanentemente?
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeletingTask(null)} className="flex-1 p-3 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700 transition-colors">
+                Cancelar
+              </button>
+              <button onClick={() => { removeSpoonTask(deletingTask.id); setDeletingTask(null); }} className="flex-1 p-3 rounded-xl font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors">
+                Sí, borrar
               </button>
             </div>
           </div>
