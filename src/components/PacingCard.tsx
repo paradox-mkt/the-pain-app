@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { usePacing, triggerMicroReminder } from '@/hooks/usePacing';
 
 interface PacingCardProps {
@@ -8,15 +8,30 @@ interface PacingCardProps {
 
 export const PacingCard: React.FC<PacingCardProps> = ({ currentSpoons, totalSpoons = 12 }) => {
   const { zone, message, color, progressColor } = usePacing(currentSpoons, totalSpoons);
+  const prevZoneRef = useRef(zone);
   
   const percentage = Math.max(0, Math.min(100, (currentSpoons / (totalSpoons || 12)) * 100));
 
-  // Opcional: solicitar permisos de notificación al montar y enviar recordatorios si se cumplen condiciones
+  // Solicitar permisos al montar
   useEffect(() => {
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
   }, []);
+
+  // Notificaciones Automáticas al bajar de Zona
+  useEffect(() => {
+    if (prevZoneRef.current !== zone) {
+      if (zone === 'YELLOW' || zone === 'RED') {
+        const timer = setTimeout(() => {
+          triggerMicroReminder(currentSpoons, totalSpoons);
+        }, 2000); // 2 segundos de delay
+        prevZoneRef.current = zone;
+        return () => clearTimeout(timer);
+      }
+      prevZoneRef.current = zone;
+    }
+  }, [zone, currentSpoons, totalSpoons]);
 
   return (
     <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col gap-3 mt-4 animate-in fade-in">
